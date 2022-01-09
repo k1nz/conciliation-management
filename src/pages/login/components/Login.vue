@@ -8,8 +8,8 @@
     @submit="onSubmit"
   >
     <template v-if="type == 'password'">
-      <t-form-item name="account">
-        <t-input v-model="formData.account" size="large" placeholder="请输入账号">
+      <t-form-item name="userName">
+        <t-input v-model="formData.userName" size="large" placeholder="请输入账号">
           <template #prefix-icon>
             <t-icon name="user" />
           </template>
@@ -79,16 +79,18 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import { useCounter } from '@/hooks';
 
 const INITIAL_DATA = {
-  phone: '',
-  account: 'admin',
+  // phone: '',
+  userName: 'admin',
   password: 'admin',
-  verifyCode: '',
-  checked: false,
+  typ: 'web',
+  lang: 'zh',
+  // verifyCode: '',
+  // checked: false,
 };
 
 const FORM_RULES = {
   phone: [{ required: true, message: '手机号必填', type: 'error' }],
-  account: [{ required: true, message: '账号必填', type: 'error' }],
+  userName: [{ required: true, message: '账号必填', type: 'error' }],
   password: [{ required: true, message: '密码必填', type: 'error' }],
   verifyCode: [{ required: true, message: '验证码必填', type: 'error' }],
 };
@@ -120,7 +122,7 @@ export default defineComponent({
           });
         } catch (e) {
           console.log(e);
-          MessagePlugin.error(e.message);
+          MessagePlugin.error(e.errMsg || e.message);
         }
       }
     };
