@@ -7,6 +7,7 @@ import { store } from './store';
 import router from './router';
 import '@/style/index.less';
 import './permission';
+import { createPinia } from 'pinia';
 
 import App from './App.vue';
 
@@ -16,5 +17,6 @@ app.use(TDesign);
 app.use(store);
 app.use(router);
 app.use(VueClipboard);
+app.use(createPinia());
 
 app.mount('#app');

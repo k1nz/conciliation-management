@@ -72,3 +72,49 @@ export default {
   actions,
   getters,
 };
+
+// pinia
+import { defineStore } from 'pinia';
+
+export const usePermStore = defineStore('permission', {
+  state: () => ({
+    whiteListRouters: ['/login'],
+    routers: [],
+  }),
+  actions: {
+    setRouters(routers) {
+      this.routers = routers;
+    },
+    async initRoutes(roles) {
+      let accessedRouters;
+
+      // admin
+      if (roles.includes('ALL_ROUTERS')) {
+        accessedRouters = asyncRouterList;
+      } else {
+        accessedRouters = filterPermissionsRouters(asyncRouterList, roles);
+      }
+
+      this.setRouters(accessedRouters);
+      // register routers
+      this.routers.concat(page404).forEach((item) => {
+        router.addRoute(item);
+      });
+    },
+    async restore() {
+      // remove routers
+      this.routers.concat(page404).forEach((item) => {
+        router.removeRoute(item.name);
+      });
+      this.setRouters([]);
+    },
+  },
+  getters: {
+    getRouters() {
+      return this.routers;
+    },
+    // whiteListRouters() {
+    //   return this.whiteListRouters;
+    // },
+  },
+});

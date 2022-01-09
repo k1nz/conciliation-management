@@ -1,4 +1,4 @@
-import { defineComponent } from 'vue';
+import { defineComponent, reactive } from 'vue';
 import { mapGetters } from 'vuex';
 import TDesignHeader from './components/Header.vue';
 import TDesignBreadcrumb from './components/Breadcrumb.vue';
@@ -10,21 +10,38 @@ import { prefix } from '@/config/global';
 import TdesignSetting from './setting.vue';
 import { SettingType } from '@/interface';
 import '@/style/layout.less';
+import { mapState } from 'pinia';
+import { useSettingStore } from '@/store/modules/setting';
+import { usePermStore } from '@/store/modules/permission';
 
 const name = `${prefix}-base-layout`;
 
 export default defineComponent({
+  setup() {
+    const permStore = usePermStore()
+    const state = reactive({
+      menuRouters: permStore.routers
+    })
+    console.log(state.menuRouters);
+    
+    return {
+      ...state
+    }
+  },
   name,
   computed: {
-    ...mapGetters({
-      showSidebar: 'setting/showSidebar',
-      showHeader: 'setting/showHeader',
-      showHeaderLogo: 'setting/showHeaderLogo',
-      showSidebarLogo: 'setting/showSidebarLogo',
-      showFooter: 'setting/showFooter',
-      mode: 'setting/mode',
-      menuRouters: 'permission/routers',
-    }),
+    ...mapState(useSettingStore, ['showSidebar', 'showHeader', 'showHeaderLogo', 'showSidebarLogo', 'showFooter', 'mode']),
+    // ...mapState(usePermStore, { menuRouters: 'routers' }),
+    // ...mapState(usePermStore, ['getRouters']),
+    // ...mapGetters({
+    //   showSidebar: 'setting/showSidebar',
+    //   showHeader: 'setting/showHeader',
+    //   showHeaderLogo: 'setting/showHeaderLogo',
+    //   showSidebarLogo: 'setting/showSidebarLogo',
+    //   showFooter: 'setting/showFooter',
+    //   mode: 'setting/mode',
+    //   menuRouters: 'permission/routers',
+    // }),
     setting(): SettingType {
       return this.$store.state.setting;
     },

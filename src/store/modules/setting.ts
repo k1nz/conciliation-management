@@ -1,5 +1,6 @@
 import STYLE_CONFIG from '@/config/style';
 import { COLOR_TOKEN, ColorSeries, ColorToken, LIGHT_CHART_COLORS, DARK_CHART_COLORS } from '@/config/color';
+import { defineStore } from 'pinia';
 
 // 定义的state初始值
 const state = {
@@ -109,3 +110,102 @@ export default {
   actions,
   getters,
 };
+
+// pinia
+export const useSettingStore = defineStore('setting', {
+  state: () => ({
+    ...STYLE_CONFIG,
+    showSettingPanel: false,
+    colorList: COLOR_TOKEN,
+    chartColors: LIGHT_CHART_COLORS,
+  }),
+  actions: {
+    async changeTheme(payload: IStateType) {
+      this.changeMode(payload);
+      this.changeBrandTheme(payload);
+      this.update(payload);
+    },
+    async changeMode(payload: IStateType) {
+      let theme = payload.mode;
+
+      if (payload.mode === 'auto') {
+        const media = window.matchMedia('(prefers-color-scheme:dark)');
+        if (media.matches) {
+          theme = 'dark';
+        } else {
+          theme = 'light';
+        }
+      }
+      const isDarkMode = theme === 'dark';
+      if (theme !== this.mode) {
+        document.documentElement.setAttribute('theme-mode', isDarkMode ? 'dark' : '');
+      }
+
+      this.changeChartColor(isDarkMode ? DARK_CHART_COLORS : LIGHT_CHART_COLORS);
+    },
+    changeBrandTheme(payload: IStateType) {
+      const { brandTheme, mode } = payload;
+      if (brandTheme !== this.brandTheme) {
+        document.documentElement.setAttribute(
+          'theme-color',
+          /^#([a-fA-F\d]{6}|[a-fA-F\d]{3})$/.test(brandTheme) && mode === 'dark' ? `${brandTheme}` : brandTheme,
+        );
+      }
+    },
+    update(payload: IStateType) {
+      this.showBreadcrumb = payload.showBreadcrumb;
+      this.mode = payload.mode;
+      this.layout = payload.layout;
+      this.isSidebarCompact = payload.isSidebarCompact;
+      this.splitMenu = payload.splitMenu;
+      this.isFooterAside = payload.isFooterAside;
+      this.isSidebarFixed = payload.isSidebarFixed;
+      this.isHeaderFixed = payload.isHeaderFixed;
+      this.showHeader = payload.showHeader;
+      this.showFooter = payload.showFooter;
+      this.backgroundTheme = payload.backgroundTheme;
+      this.brandTheme = payload.brandTheme;
+    },
+    toggleSidebarCompact() {
+      this.isSidebarCompact = !this.isSidebarCompact;
+    },
+    showSidebarCompact(payload: boolean) {
+      this.isSidebarCompact = payload;
+    },
+
+    toggleSettingPanel(payload: boolean) {
+      this.showSettingPanel = payload;
+    },
+    addColor(payload: ColorSeries) {
+      this.colorList = { ...this.colorList, ...payload };
+    },
+    changeChartColor(payload: ColorToken) {
+      this.chartColors = { ...payload };
+    },
+  },
+  getters: {
+    // showHeader() { return this.showHeader },
+    showSidebar() {
+      return this.layout !== 'top';
+    },
+    showSidebarLogo() {
+      return this.layout === 'side';
+    },
+    showHeaderLogo() {
+      return this.layout !== 'side';
+    },
+    showFooter() {
+      return this.showFooter;
+    },
+    mode() {
+      if (this.mode === 'auto') {
+        const media = window.matchMedia('(prefers-color-scheme:dark)');
+        if (media.matches) {
+          return 'dark';
+        }
+        return 'light';
+      }
+      return this.mode;
+    },
+  },
+});

@@ -1,3 +1,5 @@
+// vuex
+import { login } from '@/api/user';
 import { TOKEN_NAME } from '@/config/global';
 
 const InitUserInfo = {
@@ -34,10 +36,10 @@ const getters = {
 };
 
 const actions = {
-  async login({ commit }, userInfo) {
-    const mockLogin = async (userInfo) => {
+  async login({ commit }, loginInfo) {
+    const mockLogin = async (loginInfo) => {
       // 登录请求流程
-      console.log(userInfo);
+      console.log(loginInfo);
       // const { account, password } = userInfo;
       // if (account !== 'td') {
       //   return {
@@ -62,11 +64,19 @@ const actions = {
       };
     };
 
-    const res = await mockLogin(userInfo);
-    if (res.code === 200) {
-      commit('setToken', res.data);
-    } else {
-      throw res;
+    // const res = await mockLogin(loginInfo);
+    // if (res.code === 200) {
+    //   commit('setToken', res.data);
+    // } else {
+    //   throw res;
+    // }
+
+    try {
+      const { data } = await login(loginInfo);
+      commit('setToken', data.authToken);
+      localStorage.setItem('userInfo', JSON.stringify(data.user)); // 存储用户信息至storage, 由路由守卫将用户信息存入store中
+    } catch (err) {
+      throw err;
     }
   },
   async getUserInfo({ commit, state }) {
@@ -83,9 +93,10 @@ const actions = {
       };
     };
 
-    const res = await mockRemoteUserInfo(state.token);
+    // const res = await mockRemoteUserInfo(state.token);
 
-    commit('setUserInfo', res);
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    commit('setUserInfo', userInfo);
   },
   async logout({ commit }) {
     commit('removeToken');
@@ -100,3 +111,78 @@ export default {
   actions,
   getters,
 };
+
+// pinia
+type rolesType = {};
+
+type dataGrpsType = {};
+
+type userType = {
+  admin: boolean;
+  createTime: string;
+  createUser: string;
+  createUserName: string;
+  dataGrps: dataGrpsType;
+  description: string;
+  disabled: boolean;
+  grpId: string;
+  grpName: string;
+  roles: rolesType;
+  userId: string;
+  userName: string;
+};
+
+export interface userInfoType {
+  authToken: string;
+  lang: string;
+  user: userType;
+}
+
+import { defineStore } from 'pinia';
+
+export const useUserStore = defineStore('user', {
+  state: () => ({
+    token: localStorage.getItem(TOKEN_NAME),
+    userInfo: InitUserInfo,
+  }),
+
+  actions: {
+    setToken(token) {
+      localStorage.setItem(TOKEN_NAME, token);
+      this.token = token;
+    },
+    removeToken() {
+      localStorage.removeItem(TOKEN_NAME);
+      this.token = '';
+    },
+    setUserInfo(userInfo) {
+      this.userInfo = userInfo;
+    },
+    async login(loginInfo) {
+      try {
+        const data: userInfoType = await login(loginInfo);
+        this.setToken(data.authToken);
+        localStorage.setItem('userInfo', JSON.stringify(data.user)); // 存储用户信息至storage, 由路由守卫将用户信息存入store中
+      } catch (err) {
+        throw err;
+      }
+    },
+    async getUserInfo() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      this.setUserInfo(userInfo);
+    },
+    async logout() {
+      this.removeToken;
+      this.setUserInfo(InitUserInfo);
+    },
+  },
+
+  getters: {
+    getToken(): string {
+      return this.token;
+    },
+    getRoles(): object[] | undefined {
+      return this.userInfo?.roles;
+    },
+  },
+});
