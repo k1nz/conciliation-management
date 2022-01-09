@@ -1,3 +1,4 @@
+import { TOKEN_NAME } from '@/config/global';
 import axios from 'axios';
 import proxy from '../config/proxy';
 
@@ -6,10 +7,35 @@ const env = import.meta.env.MODE || 'development';
 const host = env === 'mock' ? '/' : proxy[env].host; // 如果是mock模式 就不配置host 会走本地Mock拦截
 
 const CODE = {
-  LOGIN_TIMEOUT: 1000,
+  LOGIN_TIMEOUT: -5,
   REQUEST_SUCCESS: 0,
   REQUEST_FOBID: 1001,
+  UNKNOWN_ERR: -1,
+  SERVER_ERR: -2,
 };
+
+const ERR_MESSAGE = [
+  { value: 0, message: 'OK' },
+  { value: -1, message: '未知的错误' },
+  { value: -2, message: '服务器内部错误' },
+  { value: -5, message: '请求超时' },
+  { value: -6, message: '当前的状态不能执行请求的操作' },
+  { value: -7, message: '无效的参数' },
+  { value: -8, message: '没有找到指定的记录' },
+  { value: -9, message: '身份验证失败' },
+  { value: -10, message: '无效的令牌' },
+  { value: -11, message: '拒绝访问' },
+  { value: -12, message: '会话超时' },
+  { value: -19, message: '权限不足' },
+  { value: -20, message: '当前用户信息不足' },
+  { value: -21, message: '资源已被占用' },
+  { value: -25, message: '没有控制权' },
+  { value: -26, message: '违反规则' },
+  { value: -104, message: '不支持所请求的HTTP方法' },
+  { value: -105, message: '缺少必要的请求参数' },
+  { value: -204, message: '重复的值' },
+  { value: -206, message: '所引用的数据不存在或所要删除的记录被其它记录引用' },
+];
 
 const instance = axios.create({
   baseURL: host,
@@ -17,7 +43,11 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-instance.interceptors.request.use((config) => config);
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_NAME);
+  if (token) config.headers['X-Auth-Token'] = token;
+  return config;
+});
 
 instance.defaults.timeout = 5000;
 
@@ -25,13 +55,23 @@ instance.interceptors.response.use(
   (response) => {
     if (response.status === 200) {
       const { data } = response;
-      if (data.code === CODE.REQUEST_SUCCESS) {
-        return data;
+      if (data.errCode === CODE.REQUEST_SUCCESS) {
+        return data.data[0];
+      } else {
+        try {
+          data.errMsg = ERR_MESSAGE.filter((e) => e.value === data.errCode)[0].message;
+        } catch (err) {
+          console.log(err);
+        } finally {
+          return Promise.reject(data);
+        }
       }
     }
     return response;
   },
   (err) => {
+    console.log('!!ERR!!', err);
+
     const { config } = err;
 
     if (!config || !config.retry) return Promise.reject(err);
