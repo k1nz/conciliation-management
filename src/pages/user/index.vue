@@ -91,7 +91,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, nextTick, onMounted, onUnmounted, watch } from 'vue';
-import { useStore } from 'vuex';
 import * as echarts from 'echarts/core';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { LineChart } from 'echarts/charts';
@@ -106,6 +105,7 @@ import ProductCIcon from '@/assets/assets-product-3.svg';
 import ProductDIcon from '@/assets/assets-product-4.svg';
 
 import Card from '@/components/card/index.vue';
+import { useSettingStore } from '@/store/modules/setting';
 
 echarts.use([GridComponent, TooltipComponent, LineChart, CanvasRenderer, LegendComponent]);
 
@@ -116,8 +116,7 @@ export default defineComponent({
   setup() {
     let lineContainer: HTMLElement;
     let lineChart: echarts.ECharts;
-    const store = useStore();
-    const { chartColors } = store.state.setting;
+    const settingStore = useSettingStore();
 
     const onLineChange = (value) => {
       lineChart.setOption(getFolderLineDataSet(value));
@@ -133,7 +132,7 @@ export default defineComponent({
           x2: 10, // 默认80px
           y2: 30, // 默认60px
         },
-        ...getFolderLineDataSet({ ...chartColors }),
+        ...getFolderLineDataSet({ ...settingStore.chartColors }),
       });
     };
 
@@ -171,7 +170,7 @@ export default defineComponent({
     };
 
     watch(
-      () => store.state.setting.brandTheme,
+      () => settingStore.brandTheme,
       () => {
         changeChartsTheme([lineChart]);
       },

@@ -1,3 +1,6 @@
+// pinia
+import { acceptHMRUpdate, defineStore } from 'pinia';
+import { RouteRecordRaw } from 'vue-router';
 import router, { asyncRouterList, page404 } from '@/router';
 
 function filterPermissionsRouters(routes, roles) {
@@ -18,66 +21,13 @@ function filterPermissionsRouters(routes, roles) {
   return res;
 }
 
-const state = {
-  whiteListRouters: ['/login'],
-  routers: [],
-};
-
-const mutations = {
-  setRouters: (state, routers) => {
-    state.routers = routers;
-  },
-};
-
-const getters = {
-  routers: (state) => {
-    return state.routers;
-  },
-  whiteListRouters: (state) => {
-    return state.whiteListRouters;
-  },
-};
-
-const actions = {
-  async initRoutes({ commit }, roles) {
-    let accessedRouters;
-
-    // special token
-    if (roles.includes('ALL_ROUTERS')) {
-      accessedRouters = asyncRouterList;
-    } else {
-      accessedRouters = filterPermissionsRouters(asyncRouterList, roles);
-    }
-
-    commit('setRouters', accessedRouters);
-
-    // register routers
-    state.routers.concat(page404).forEach((item) => {
-      router.addRoute(item);
-    });
-  },
-  async restore({ commit, state }) {
-    // remove routers
-    state.routers.concat(page404).forEach((item) => {
-      router.removeRoute(item.name);
-    });
-    commit('setRouters', []);
-  },
-};
-
-export default {
-  namespaced: true,
-  state,
-  mutations,
-  actions,
-  getters,
-};
-
-// pinia
-import { defineStore } from 'pinia';
+export interface permissionState {
+  whiteListRouters: Array<string>;
+  routers: Array<RouteRecordRaw>;
+}
 
 export const usePermStore = defineStore('permission', {
-  state: () => ({
+  state: (): permissionState => ({
     whiteListRouters: ['/login'],
     routers: [],
   }),
@@ -85,11 +35,11 @@ export const usePermStore = defineStore('permission', {
     setRouters(routers) {
       this.routers = routers;
     },
-    async initRoutes(roles) {
+    async initRoutes(roles: string[]) {
       let accessedRouters;
 
       // admin
-      if (roles.includes('ALL_ROUTERS')) {
+      if (roles.includes('ADMIN')) {
         accessedRouters = asyncRouterList;
       } else {
         accessedRouters = filterPermissionsRouters(asyncRouterList, roles);
@@ -113,8 +63,9 @@ export const usePermStore = defineStore('permission', {
     getRouters() {
       return this.routers;
     },
-    // whiteListRouters() {
-    //   return this.whiteListRouters;
-    // },
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(usePermStore, import.meta.hot));
+}

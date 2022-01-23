@@ -59,7 +59,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, nextTick, onMounted, onUnmounted, watch } from 'vue';
-import { useStore } from 'vuex';
 
 import * as echarts from 'echarts/core';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -73,6 +72,7 @@ import { LAST_7_DAYS } from '@/utils/date';
 
 import Trend from '@/components/trend/index.vue';
 import Card from '@/components/card/index.vue';
+import { useSettingStore } from '@/store/modules/setting';
 
 echarts.use([GridComponent, LegendComponent, TooltipComponent, LineChart, ScatterChart, CanvasRenderer]);
 
@@ -84,8 +84,8 @@ export default defineComponent({
     ProductCard,
   },
   setup() {
-    const store = useStore();
-    const { chartColors } = store.state.setting;
+    const settingStore = useSettingStore();
+    const { chartColors } = settingStore;
     // lineChart logic
     let lineContainer: HTMLElement;
     let lineChart: echarts.ECharts;
@@ -134,14 +134,14 @@ export default defineComponent({
     });
 
     watch(
-      () => store.state.setting.mode,
+      () => settingStore.mode,
       () => {
         renderCharts();
       },
     );
 
     watch(
-      () => store.state.setting.brandTheme,
+      () => settingStore.brandTheme,
       () => {
         changeChartsTheme([lineChart, scatterChart]);
       },
@@ -152,11 +152,10 @@ export default defineComponent({
       PRODUCT_LIST,
       PANE_LIST_DATA,
       onSatisfyChange() {
-        scatterChart.setOption(getScatterDataSet({ ...chartColors }));
+        scatterChart.setOption(getScatterDataSet({ ...settingStore.chartColors }));
       },
       onMaterialChange(value: string[]) {
-        const { chartColors } = store.state.setting;
-        lineChart.setOption(getFolderLineDataSet({ dateTime: value, ...chartColors }));
+        lineChart.setOption(getFolderLineDataSet({ dateTime: value, ...(settingStore.chartColors as any) }));
       },
     };
   },

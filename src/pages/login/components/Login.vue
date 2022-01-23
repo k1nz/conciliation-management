@@ -59,7 +59,7 @@
     </template>
 
     <t-form-item v-if="type !== 'qrcode'" class="btn-container">
-      <t-button block size="large" type="submit"> 登录 </t-button>
+      <t-button block size="large" type="submit" :loading="loading"> 登录 </t-button>
     </t-form-item>
 
     <!-- <div class="switch-container">
@@ -73,12 +73,13 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
 import QrcodeVue from 'qrcode.vue';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { useCounter } from '@/hooks';
+import { useUserStore } from '@/store/modules/user';
+import { ILoginInfoType } from '@/interface';
 
-const INITIAL_DATA = {
+const INITIAL_DATA: ILoginInfoType = {
   // phone: '',
   userName: 'admin',
   password: 'admin',
@@ -110,24 +111,28 @@ export default defineComponent({
     };
 
     const router = useRouter();
-    const store = useStore();
+    const userStore = useUserStore();
+    const loading = ref(false);
 
     const onSubmit = async ({ validateResult }) => {
       if (validateResult === true) {
         try {
-          await store.dispatch('user/login', formData.value);
+          loading.value = true;
+          await userStore.login(formData.value);
           MessagePlugin.success('登陆成功');
           router.push({
             path: '/dashboard/base',
           });
         } catch (e) {
           console.log(e);
-          MessagePlugin.error(e.errMsg || e.message);
+        } finally {
+          loading.value = false;
         }
       }
     };
 
     return {
+      loading,
       FORM_RULES,
       formData,
       showPsw,

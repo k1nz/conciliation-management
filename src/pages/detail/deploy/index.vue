@@ -70,7 +70,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useStore } from 'vuex';
 
 import * as echarts from 'echarts/core';
 import { TitleComponent, ToolboxComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
@@ -84,6 +83,7 @@ import { prefix } from '@/config/global';
 import Card from '@/components/card/index.vue';
 import { ResDataType } from '@/interface';
 import request from '@/utils/request';
+import { useSettingStore } from '@/store/modules/setting';
 
 echarts.use([
   TitleComponent,
@@ -100,9 +100,8 @@ export default defineComponent({
   name: 'DetailDeploy',
   components: { Card },
   setup() {
-    const store = useStore();
+    const settingStore = useSettingStore();
 
-    const { chartColors } = store.state.setting;
     const data = ref([]);
     const pagination = ref({
       defaultPageSize: 10,
@@ -133,9 +132,9 @@ export default defineComponent({
     onMounted(() => {
       monitorContainer = document.getElementById('monitorContainer');
       monitorChart = echarts.init(monitorContainer);
-      monitorChart.setOption(getSmoothLineDataSet({ ...chartColors }));
+      monitorChart.setOption(getSmoothLineDataSet({ ...settingStore.chartColors }));
       setInterval(() => {
-        monitorChart.setOption(getSmoothLineDataSet({ ...chartColors }));
+        monitorChart.setOption(getSmoothLineDataSet({ ...settingStore.chartColors }));
       }, 3000);
     });
 
@@ -145,7 +144,7 @@ export default defineComponent({
     onMounted(() => {
       dataContainer = document.getElementById('dataContainer');
       dataChart = echarts.init(dataContainer);
-      dataChart.setOption(get2ColBarChartDataSet({ ...chartColors }));
+      dataChart.setOption(get2ColBarChartDataSet({ ...settingStore.chartColors }));
     });
 
     const intervalTimer = null;
@@ -168,7 +167,7 @@ export default defineComponent({
     });
 
     const onAlertChange = () => {
-      dataChart.setOption(get2ColBarChartDataSet({ ...chartColors }));
+      dataChart.setOption(get2ColBarChartDataSet({ ...settingStore.chartColors }));
     };
 
     onMounted(() => {
@@ -177,7 +176,7 @@ export default defineComponent({
     });
 
     watch(
-      () => store.state.setting.brandTheme,
+      () => settingStore.brandTheme,
       () => {
         changeChartsTheme([monitorChart, dataChart]);
       },

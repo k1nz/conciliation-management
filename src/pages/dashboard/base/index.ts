@@ -2,9 +2,9 @@ import dayjs from 'dayjs';
 import * as echarts from 'echarts/core';
 import { Color } from 'tvision-color';
 import { getBrandColor, defaultLightColor, defaultDarkColor } from '@/config/color';
-import store from '@/store';
+import { useSettingStore } from '@/store/modules/setting';
 
-const { state } = store;
+const settingStore = useSettingStore();
 
 /**
  * 依据主题类型获取颜色
@@ -14,8 +14,7 @@ const { state } = store;
  * @returns {}
  */
 export function getColorFromTheme(theme: string) {
-  const { setting } = state as any;
-  const { colorList, mode } = setting;
+  const { mode, colorList } = settingStore;
   const isDarkMode = mode === 'dark';
   let themeColorList = [];
   const themeColor = getBrandColor(theme, colorList);
@@ -41,8 +40,8 @@ export function getColorFromTheme(theme: string) {
 
 /** 图表颜色 */
 function chartListColor(): Array<string> {
-  const { setting } = state as any;
-  const res = getColorFromTheme(setting.brandTheme);
+  const { brandTheme } = settingStore;
+  const res = getColorFromTheme(brandTheme);
 
   return res;
 }

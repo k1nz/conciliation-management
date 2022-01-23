@@ -1,5 +1,6 @@
-import { TOKEN_NAME } from '@/config/global';
 import axios from 'axios';
+import { MessagePlugin } from 'tdesign-vue-next';
+import { TOKEN_NAME } from '@/config/global';
 import proxy from '../config/proxy';
 
 const env = import.meta.env.MODE || 'development';
@@ -39,7 +40,7 @@ const ERR_MESSAGE = [
 
 const instance = axios.create({
   baseURL: host,
-  timeout: 1000,
+  timeout: 5000,
   withCredentials: true,
 });
 
@@ -56,16 +57,16 @@ instance.interceptors.response.use(
     if (response.status === 200) {
       const { data } = response;
       if (data.errCode === CODE.REQUEST_SUCCESS) {
-        return data.data[0];
-      } else {
-        try {
-          data.errMsg = ERR_MESSAGE.filter((e) => e.value === data.errCode)[0].message;
-        } catch (err) {
-          console.log(err);
-        } finally {
-          return Promise.reject(data);
-        }
+        return data?.data?.[0];
       }
+      // TODO：无效令牌重新登录
+      try {
+        data.errMsg = ERR_MESSAGE.filter((e) => e.value === data.errCode)[0].message;
+      } catch (err) {
+        console.log(err);
+      }
+      MessagePlugin.error(data.errMsg || data.message);
+      return Promise.reject(data);
     }
     return response;
   },
@@ -73,6 +74,7 @@ instance.interceptors.response.use(
     console.log('!!ERR!!', err);
 
     const { config } = err;
+    MessagePlugin.error('网络异常');
 
     if (!config || !config.retry) return Promise.reject(err);
 

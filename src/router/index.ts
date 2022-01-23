@@ -21,10 +21,12 @@ const defaultRouterList: Array<RouteRecordRaw> = [
   },
 ];
 
-export const page404 = {
+export const page404: RouteRecordRaw = {
   path: '/:w+',
   name: '404Page',
-  redirect: '/result/404',
+  // redirect: '/result/404',
+  component: () => import('@/pages/result/404/index.vue'),
+  meta: { title: '访问页面不存在页' },
 };
 
 const router = createRouter({

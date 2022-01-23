@@ -18,15 +18,15 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { useStore } from 'vuex';
+import { useSettingStore } from '@/store/modules/setting';
 // import LogoFullIcon from '@/assets/assets-logo-full.svg?component';
 
 export default defineComponent({
   // components: { LogoFullIcon },
   setup() {
-    const store = useStore();
+    const settingStore = useSettingStore();
     const toggleSettingPanel = () => {
-      store.commit('setting/toggleSettingPanel', true);
+      settingStore.toggleSettingPanel(true);
     };
 
     const navToGitHub = () => {

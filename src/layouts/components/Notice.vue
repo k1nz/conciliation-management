@@ -48,18 +48,18 @@
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
 import { NotificationItem } from '@/interface';
+import { useNotificationStore } from '@/store/modules/notification';
 
 export default defineComponent({
   setup() {
-    const store = useStore();
-    const { msgData } = store.state.notification;
+    const notificationStore = useNotificationStore();
+    const router = useRouter();
 
-    const unreadMsg = computed(() => store.getters['notification/unreadMsg']);
+    const unreadMsg = computed(() => notificationStore.unreadMsg);
 
     const setRead = (type: string, item?: NotificationItem) => {
-      const changeMsg = msgData;
+      const changeMsg = notificationStore.msgData;
       if (type === 'all') {
         changeMsg.forEach((e: NotificationItem) => {
           e.status = false;
@@ -71,11 +71,10 @@ export default defineComponent({
           }
         });
       }
-      store.commit('notification/setMsgData', changeMsg);
+      notificationStore.setMsgData(changeMsg);
     };
 
     const goDetail = () => {
-      const router = useRouter();
       router.push('/detail/secondary');
     };
 

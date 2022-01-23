@@ -204,12 +204,12 @@
 </template>
 <script lang="ts">
 import { defineComponent, onMounted, watch, ref, onUnmounted, nextTick } from 'vue';
-import { useStore } from 'vuex';
 
 import * as echarts from 'echarts/core';
 import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
 import { PieChart, LineChart, BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
+import { useSettingStore } from '@/store/modules/setting';
 import { LAST_7_DAYS } from '@/utils/date';
 
 // 导入样式
@@ -248,10 +248,8 @@ export default defineComponent({
     Trend,
   },
   setup() {
-    const store = useStore();
+    const settingStore = useSettingStore();
     const resizeTime = ref(1);
-
-    const { chartColors } = store.state.setting;
 
     // moneyCharts
     let moneyContainer: HTMLElement;
@@ -283,7 +281,7 @@ export default defineComponent({
         stokeContainer = document.getElementById('stokeContainer');
       }
       stokeChart = echarts.init(stokeContainer);
-      stokeChart.setOption(constructInitDataset({ dateTime: LAST_7_DAYS, ...chartColors }));
+      stokeChart.setOption(constructInitDataset({ dateTime: LAST_7_DAYS, ...(settingStore.chartColors as any) }));
     };
 
     // monitorChart
@@ -294,7 +292,7 @@ export default defineComponent({
         monitorContainer = document.getElementById('monitorContainer');
       }
       monitorChart = echarts.init(monitorContainer);
-      monitorChart.setOption(getLineChartDataSet({ ...chartColors }));
+      monitorChart.setOption(getLineChartDataSet({ ...settingStore.chartColors }));
     };
 
     // monitorChart
@@ -305,7 +303,7 @@ export default defineComponent({
         countContainer = document.getElementById('countContainer');
       }
       countChart = echarts.init(countContainer);
-      countChart.setOption(getPieChartDataSet(chartColors));
+      countChart.setOption(getPieChartDataSet(settingStore.chartColors as any));
     };
 
     const renderCharts = () => {
@@ -361,15 +359,32 @@ export default defineComponent({
 
     const currentMonth = ref(getThisMonth());
 
+    // settingStore.$subscribe((mutation) => {
+    //   switch (mutation.events['key']) {
+    //     case 'brandTheme':
+    //       changeChartsTheme([refundChart, stokeChart, monitorChart, countChart]);
+    //       break;
+    //     case 'mode':
+    //       [moneyChart, refundChart, stokeChart, monitorChart, countChart].forEach((item) => {
+    //         item.dispose();
+    //       });
+
+    //       renderCharts();
+    //       break;
+    //     default:
+    //       break;
+    //   }
+    // });
+
     watch(
-      () => store.state.setting.brandTheme,
+      () => settingStore.brandTheme,
       () => {
         changeChartsTheme([refundChart, stokeChart, monitorChart, countChart]);
       },
     );
 
     watch(
-      () => store.state.setting.mode,
+      () => settingStore.mode,
       () => {
         [moneyChart, refundChart, stokeChart, monitorChart, countChart].forEach((item) => {
           item.dispose();
@@ -390,10 +405,10 @@ export default defineComponent({
       BUY_COLUMNS,
       onCurrencyChange(checkedValues: string[]) {
         currentMonth.value = getThisMonth(checkedValues);
-        monitorChart.setOption(getLineChartDataSet({ dateTime: checkedValues, ...chartColors }));
+        monitorChart.setOption(getLineChartDataSet({ dateTime: checkedValues, ...(settingStore.chartColors as any) }));
       },
       onStokeDataChange(checkedValues: string[]) {
-        stokeChart.setOption(constructInitDataset({ dateTime: checkedValues, ...chartColors }));
+        stokeChart.setOption(constructInitDataset({ dateTime: checkedValues, ...(settingStore.chartColors as any) }));
       },
       rehandleClickOp(val: MouseEvent) {
         console.log(val);

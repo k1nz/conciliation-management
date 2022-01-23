@@ -3,13 +3,14 @@
     <t-head-menu :class="menuCls" :theme="theme" expand-type="popup" :value="active">
       <template #logo>
         <span v-if="showLogo" class="header-logo-container" @click="handleNav('/dashboard/base')">
-          <tLogoFull class="t-logo" />
+          <span class="project-name">人民调解案件管理系统</span>
+          <!-- <tLogoFull class="t-logo" /> -->
         </span>
         <div v-else class="header-operate-left">
           <t-button theme="default" shape="square" variant="text" @click="changeCollapsed">
             <t-icon class="collapsed-icon" name="view-list" />
           </t-button>
-          <search :layout="layout" />
+          <!-- <search :layout="layout" /> -->
         </div>
       </template>
       <menu-content v-show="layout !== 'side'" class="header-menu" :nav-data="menu" />
@@ -21,7 +22,7 @@
           <!-- 全局通知 -->
           <notice />
 
-          <t-tooltip placement="bottom" content="代码仓库">
+          <!-- <t-tooltip placement="bottom" content="代码仓库">
             <t-button theme="default" shape="square" variant="text" @click="navToGitHub">
               <t-icon name="logo-github" />
             </t-button>
@@ -30,12 +31,12 @@
             <t-button theme="default" shape="square" variant="text" @click="navToHelper">
               <t-icon name="help-circle" />
             </t-button>
-          </t-tooltip>
+          </t-tooltip> -->
           <t-dropdown :min-column-width="135" trigger="click">
             <template #dropdown>
               <t-dropdown-menu>
-                <t-dropdown-item class="operations-dropdown-container-item" @click="handleNav('/user/index')">
-                  <t-icon name="user-circle"></t-icon>个人中心
+                <t-dropdown-item class="operations-dropdown-container-item" @click="handleChangePwd">
+                  <t-icon name="setting"></t-icon>修改密码
                 </t-dropdown-item>
                 <t-dropdown-item class="operations-dropdown-container-item" @click="handleLogout">
                   <t-icon name="poweroff"></t-icon>退出登录
@@ -47,7 +48,7 @@
                 <t-icon class="header-user-avatar" name="user-circle" />
               </template>
               <div class="header-user-account">
-                Tencent
+                {{ userName }}
                 <t-icon name="chevron-down" />
               </div>
             </t-button>
@@ -60,28 +61,30 @@
         </div>
       </template>
     </t-head-menu>
+    <password-change v-model:visible="changePasswordVisible" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from 'vue';
-import { useStore } from 'vuex';
 import { useRouter, useRoute } from 'vue-router';
+import { useSettingStore } from '@/store/modules/setting';
+import { useUserStore } from '@/store/modules/user';
 
 import { prefix } from '@/config/global';
-import tLogoFull from '@/assets/assets-logo-full.svg?component';
 import { MenuRoute } from '@/interface';
 
 import Notice from './Notice.vue';
 import Search from './Search.vue';
 import MenuContent from './MenuContent';
+import PasswordChange from '@/components/password-change/index.vue';
 
 export default defineComponent({
   components: {
-    tLogoFull,
     Notice,
     Search,
     MenuContent,
+    PasswordChange,
   },
   props: {
     theme: {
@@ -114,11 +117,12 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const store = useStore();
     const router = useRouter();
+    const settingStore = useSettingStore();
+    const userStore = useUserStore();
 
     const toggleSettingPanel = () => {
-      store.commit('setting/toggleSettingPanel', true);
+      settingStore.toggleSettingPanel(true);
     };
 
     const active = computed(() => {
@@ -155,9 +159,16 @@ export default defineComponent({
     };
 
     const changeCollapsed = () => {
-      store.commit('setting/toggleSidebarCompact');
+      settingStore.toggleSidebarCompact();
     };
-    const isSidebarCompact = computed(() => store.state.setting.isSidebarCompact);
+    const isSidebarCompact = computed(() => settingStore.isSidebarCompact);
+
+    const { userName } = userStore.userInfo;
+
+    const changePasswordVisible = ref(false);
+    const handleChangePwd = () => {
+      changePasswordVisible.value = true;
+    };
 
     const handleNav = (url) => {
       router.push(url);
@@ -176,6 +187,9 @@ export default defineComponent({
     };
 
     return {
+      changePasswordVisible,
+      handleChangePwd,
+      userName,
       isSidebarCompact,
       toggleSettingPanel,
       active,

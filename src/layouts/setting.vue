@@ -92,7 +92,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref, computed, watch, onMounted } from 'vue';
-import { useStore } from 'vuex';
 import { ColorPicker } from 'vue-color-kit';
 import { MessagePlugin, PopupVisibleChangeContext } from 'tdesign-vue-next';
 import { Color } from 'tvision-color';
@@ -107,6 +106,7 @@ import ColorContainer from '@/components/color/index.vue';
 import SettingDarkIcon from '@/assets/assets-setting-dark.svg';
 import SettingLightIcon from '@/assets/assets-setting-light.svg';
 import SettingAutoIcon from '@/assets/assets-setting-auto.svg';
+import { useSettingStore } from '@/store/modules/setting';
 
 const LAYOUT_OPTION = ['side', 'top', 'mix'];
 const COLOR_OPTIONS = ['default', 'cyan', 'green', 'yellow', 'orange', 'red', 'pink', 'purple', 'dynamic'];
@@ -121,61 +121,58 @@ export default defineComponent({
   components: { Thumbnail, ColorContainer, ColorPicker },
   setup() {
     const formData = ref({ ...STYLE_CONFIG });
-    const store = useStore();
+    const settingStore = useSettingStore();
     const colors = ref();
     const isColoPickerDisplay = ref(false);
 
     const showSettingPanel = computed({
       get() {
-        return store.state.setting.showSettingPanel;
+        return settingStore.showSettingPanel;
       },
       set(newVal) {
-        store.commit('setting/toggleSettingPanel', newVal);
+        settingStore.toggleSettingPanel(newVal as boolean);
       },
     });
 
     const mode = computed(() => {
-      return store.getters['setting/mode'];
+      return settingStore.getMode;
     });
 
     watch(
       () => colors.value,
       (newColor) => {
         const { hex } = newColor;
-        const { setting } = store.state;
 
         // hex 主题色
         const newPalette = Color.getPaletteByGradation({
           colors: [hex],
           step: 10,
         })[0];
-        const { mode } = store.state.setting;
-        const colorMap = generateColorMap(hex, newPalette, mode);
+        const colorMap = generateColorMap(hex, newPalette, settingStore.getMode);
 
-        store.commit('setting/addColor', { [hex]: colorMap });
+        settingStore.addColor({ [hex]: colorMap });
 
-        insertThemeStylesheet(hex, colorMap, mode);
+        insertThemeStylesheet(hex, colorMap, settingStore.getMode);
 
-        store.dispatch('setting/changeTheme', { ...setting, brandTheme: hex });
+        settingStore.changeTheme({ brandTheme: hex });
       },
     );
     const changeColor = (val) => {
       const { hex } = val;
-      const { setting } = store.state;
 
       // hex 主题色
       const newPalette = Color.getPaletteByGradation({
         colors: [hex],
         step: 10,
       })[0];
-      const { mode } = store.state.setting;
-      const colorMap = generateColorMap(hex, newPalette, mode);
+      const { getMode } = settingStore;
+      const colorMap = generateColorMap(hex, newPalette, getMode);
 
-      store.commit('setting/addColor', { [hex]: colorMap });
+      settingStore.addColor({ [hex]: colorMap });
 
-      insertThemeStylesheet(hex, colorMap, mode);
+      insertThemeStylesheet(hex, colorMap, getMode);
 
-      store.dispatch('setting/changeTheme', { ...setting, brandTheme: hex });
+      settingStore.changeTheme({ brandTheme: hex });
     };
 
     onMounted(() => {
@@ -205,8 +202,17 @@ export default defineComponent({
     };
 
     const handleCloseDrawer = () => {
-      store.commit('setting/toggleSettingPanel', false);
+      settingStore.toggleSettingPanel(false);
     };
+
+    watch(
+      () => formData.value,
+      (newFormData) => {
+        settingStore.changeTheme(newFormData);
+      },
+      { deep: true },
+    );
+
     return {
       mode,
       changeColor,
@@ -224,14 +230,6 @@ export default defineComponent({
         return `https://tdesign.gtimg.com/tdesign-pro/setting/${name}.png`;
       },
     };
-  },
-  watch: {
-    formData: {
-      handler(newVal) {
-        this.$store.dispatch('setting/changeTheme', newVal);
-      },
-      deep: true,
-    },
   },
 });
 </script>

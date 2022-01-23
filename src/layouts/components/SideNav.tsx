@@ -1,18 +1,17 @@
 import { defineComponent, PropType, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useStore } from 'vuex';
 import { prefix } from '@/config/global';
 import pgk from '../../../package.json';
 import MenuContent from './MenuContent';
 import tLogo from '@/assets/assets-t-logo.svg?component';
-import tLogoFull from '@/assets/assets-logo-full.svg?component';
+import { useSettingStore } from '@/store/modules/setting';
 
 const MIN_POINT = 992 - 1;
 
 const useComputed = (props) => {
-  const store = useStore();
+  const settingStore = useSettingStore();
 
-  const collapsed = computed(() => store.state.setting.isSidebarCompact);
+  const collapsed = computed(() => settingStore.isSidebarCompact);
 
   const sideNavCls = computed(() => {
     const { isCompact } = props;
@@ -53,7 +52,6 @@ export default defineComponent({
   name: 'SideNav',
   components: {
     MenuContent,
-    tLogoFull,
     tLogo,
   },
   props: {
@@ -87,16 +85,16 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const store = useStore();
+    const settingStore = useSettingStore();
     const router = useRouter();
 
     const changeCollapsed = () => {
-      store.commit('setting/toggleSidebarCompact');
+      settingStore.toggleSidebarCompact();
     };
 
     const autoCollapsed = () => {
       const isCompact = window.innerWidth <= MIN_POINT;
-      store.commit('setting/showSidebarCompact', isCompact);
+      settingStore.showSidebarCompact(isCompact);
     };
 
     onMounted(() => {
@@ -154,7 +152,7 @@ export default defineComponent({
                   {this.collapsed ? (
                     <tLogo class={`${prefix}-side-nav-logo-t-logo`} />
                   ) : (
-                    <t-logo-full class={`${prefix}-side-nav-logo-tdesign-logo`} />
+                    <span class="project-name">人民调解案件管理系统</span>
                   )}
                 </span>
               ),
