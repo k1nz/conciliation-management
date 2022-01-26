@@ -22,7 +22,7 @@
         :hover="true"
         :pagination="pagination"
         :selected-row-keys="selectedRowKeys"
-        :loading="dataLoading"
+        :loading="loading"
         @page-change="rehandlePageChange"
         @change="rehandleChange"
         @select-change="rehandleSelectChange"
@@ -65,16 +65,16 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { SearchIcon } from 'tdesign-icons-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 
+import { useRequest } from 'vue-request';
 import { CONTRACT_STATUS, CONTRACT_TYPES, CONTRACT_PAYMENT_TYPES } from '@/constants';
 import Trend from '@/components/trend/index.vue';
 import Card from '@/components/card/index.vue';
 import { ResDataType } from '@/interface';
-import request from '@/utils/request';
 
 import { COLUMNS } from './constants';
 
@@ -86,7 +86,6 @@ export default defineComponent({
     Trend,
   },
   setup() {
-    const data = ref([]);
     const pagination = ref({
       defaultPageSize: 20,
       total: 100,
@@ -95,25 +94,22 @@ export default defineComponent({
 
     const searchValue = ref('');
 
-    const dataLoading = ref(false);
-    const fetchData = async () => {
-      dataLoading.value = true;
-      try {
-        const res: ResDataType = await request.get('/api/get-list');
-        if (res.code === 0) {
-          const { list = [] } = res.data;
-          data.value = list;
+    const { data, loading } = useRequest<ResDataType, any, any[]>(
+      'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-list',
+      {
+        initialData: [],
+        formatResult: (res) => {
+          if (res.code === 0) return res.data.list;
+          return [];
+        },
+        onSuccess: (res) => {
           pagination.value = {
             ...pagination.value,
-            total: list.length,
+            total: res.length,
           };
-        }
-      } catch (e) {
-        console.log(e);
-      } finally {
-        dataLoading.value = false;
-      }
-    };
+        },
+      },
+    );
 
     const deleteIdx = ref(-1);
     const confirmBody = computed(() => {
@@ -122,10 +118,6 @@ export default defineComponent({
         return `删除后，${name}的所有合同信息将被清空，且无法恢复`;
       }
       return '';
-    });
-
-    onMounted(() => {
-      fetchData();
     });
 
     const confirmVisible = ref(false);
@@ -162,7 +154,7 @@ export default defineComponent({
       COLUMNS,
       data,
       searchValue,
-      dataLoading,
+      loading,
       pagination,
       confirmBody,
       confirmVisible,

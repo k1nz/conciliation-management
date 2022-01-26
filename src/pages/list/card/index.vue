@@ -11,11 +11,11 @@
 
     <dialog-form v-model:visible="formDialogVisible" :data="formData" />
 
-    <template v-if="pagination.total > 0 && !dataLoading">
+    <template v-if="pagination.total > 0 && !loading">
       <div class="list-card-items">
         <t-row :gutter="[16, 12]">
           <t-col
-            v-for="product in productList.slice(
+            v-for="product in data.slice(
               pagination.pageSize * (pagination.current - 1),
               pagination.pageSize * pagination.current,
             )"
@@ -45,7 +45,7 @@
       </div>
     </template>
 
-    <div v-else-if="dataLoading" class="list-card-loading">
+    <div v-else-if="loading" class="list-card-loading">
       <t-loading size="large" text="加载数据中..." />
     </div>
 
@@ -59,12 +59,12 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { SearchIcon } from 'tdesign-icons-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
+import { useRequest } from 'vue-request';
 import Card from './components/Card.vue';
 import DialogForm from './components/DialogForm.vue';
-import request from '@/utils/request';
 import { ResDataType } from '@/interface';
 
 const INITIAL_DATA = {
@@ -87,34 +87,26 @@ export default defineComponent({
     const pagination = ref({ current: 1, pageSize: 12, total: 0 });
     const deleteProduct = ref(undefined);
 
-    const productList = ref([]);
-    const dataLoading = ref(true);
-
-    const fetchData = async () => {
-      try {
-        const res: ResDataType = await request.get('/api/get-card-list');
-        if (res.code === 0) {
-          const { list = [] } = res.data;
-          productList.value = list;
+    const { data, loading } = useRequest<ResDataType, any, any[]>(
+      'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-card-list',
+      {
+        initialData: [],
+        formatResult: (res) => {
+          if (res.code === 0) return res.data.list;
+          return [];
+        },
+        onSuccess: (res) => {
           pagination.value = {
             ...pagination.value,
-            total: list.length,
+            total: res.length,
           };
-        }
-      } catch (e) {
-        console.log(e);
-      } finally {
-        dataLoading.value = false;
-      }
-    };
+        },
+      },
+    );
 
     const confirmBody = computed(() =>
       deleteProduct.value ? `确认删除后${deleteProduct.value.name}的所有产品信息将被清空, 且无法恢复` : '',
     );
-
-    onMounted(() => {
-      fetchData();
-    });
 
     const formDialogVisible = ref(false);
     const searchValue = ref('');
@@ -123,8 +115,8 @@ export default defineComponent({
 
     return {
       pagination,
-      productList,
-      dataLoading,
+      data,
+      loading,
       formDialogVisible,
       confirmBody,
       searchValue,
@@ -143,7 +135,7 @@ export default defineComponent({
       },
       onConfirmDelete() {
         const { index } = deleteProduct.value;
-        productList.value.splice(index - 1, 1);
+        data.value.splice(index - 1, 1);
         confirmVisible.value = false;
         MessagePlugin.success('删除成功');
       },

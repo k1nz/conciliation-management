@@ -76,13 +76,13 @@ import { TitleComponent, ToolboxComponent, TooltipComponent, GridComponent, Lege
 import { BarChart, LineChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
+import { useRequest } from 'vue-request';
 import { changeChartsTheme, getSmoothLineDataSet, get2ColBarChartDataSet } from '../../dashboard/base/index';
 import { BASE_INFO_DATA, TABLE_COLUMNS } from './constants';
 
 import { prefix } from '@/config/global';
 import Card from '@/components/card/index.vue';
 import { ResDataType } from '@/interface';
-import request from '@/utils/request';
 import { useSettingStore } from '@/store/modules/setting';
 
 echarts.use([
@@ -102,28 +102,29 @@ export default defineComponent({
   setup() {
     const settingStore = useSettingStore();
 
-    const data = ref([]);
     const pagination = ref({
       defaultPageSize: 10,
       total: 100,
       defaultCurrent: 1,
     });
 
-    const fetchData = async () => {
-      try {
-        const res: ResDataType = await request.get('/api/get-project-list');
-        if (res.code === 0) {
-          const { list = [] } = res.data;
-          data.value = list;
+    const { data } = useRequest<ResDataType, any, any[]>(
+      'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-project-list',
+      {
+        initialData: [],
+        formatResult: (res) => {
+          if (res.code === 0) return res.data.list;
+          return [];
+        },
+        onSuccess: (res) => {
           pagination.value = {
             ...pagination.value,
-            total: list.length,
+            total: res.length,
           };
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    };
+        },
+      },
+    );
+
     const visible = ref(false);
 
     // monitorChart logic
@@ -171,7 +172,6 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      fetchData();
       window.addEventListener('resize', updateContainer, false);
     });
 

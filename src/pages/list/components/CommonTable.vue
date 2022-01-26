@@ -63,7 +63,7 @@
         :vertical-align="verticalAlign"
         :hover="hover"
         :pagination="pagination"
-        :loading="dataLoading"
+        :loading="loading"
         @page-change="rehandlePageChange"
         @change="rehandleChange"
       >
@@ -103,10 +103,10 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { MessagePlugin } from 'tdesign-vue-next';
+import { useRequest } from 'vue-request';
 import Trend from '@/components/trend/index.vue';
-import request from '@/utils/request';
 import { ResDataType } from '@/interface';
 
 import {
@@ -186,27 +186,22 @@ export default defineComponent({
     });
     const confirmVisible = ref(false);
 
-    const data = ref([]);
-
-    const dataLoading = ref(false);
-    const fetchData = async () => {
-      dataLoading.value = true;
-      try {
-        const res: ResDataType = await request.get('/api/get-list');
-        if (res.code === 0) {
-          const { list = [] } = res.data;
-          data.value = list;
+    const { data, loading } = useRequest<ResDataType, any, any[]>(
+      'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-list',
+      {
+        initialData: [],
+        formatResult: (res) => {
+          if (res.code === 0) return res.data.list;
+          return [];
+        },
+        onSuccess: (res) => {
           pagination.value = {
             ...pagination.value,
-            total: list.length,
+            total: res.length,
           };
-        }
-      } catch (e) {
-        console.log(e);
-      } finally {
-        dataLoading.value = false;
-      }
-    };
+        },
+      },
+    );
 
     const deleteIdx = ref(-1);
     const confirmBody = computed(() => {
@@ -234,10 +229,6 @@ export default defineComponent({
       resetIdx();
     };
 
-    onMounted(() => {
-      fetchData();
-    });
-
     return {
       data,
       COLUMNS,
@@ -253,7 +244,7 @@ export default defineComponent({
       ...tableConfig,
       onConfirmDelete,
       onCancel,
-      dataLoading,
+      loading,
       handleClickDelete({ row }) {
         deleteIdx.value = row.rowIndex;
         confirmVisible.value = true;

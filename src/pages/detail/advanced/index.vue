@@ -111,9 +111,9 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
+import { useRequest } from 'vue-request';
 import { prefix } from '@/config/global';
 import { BASE_INFO_DATA, TABLE_COLUMNS_DATA, PRODUCT_LIST } from './constants';
-import request from '@/utils/request';
 import { ResDataType } from '@/interface';
 
 import Card from '@/components/card/index.vue';
@@ -126,7 +126,6 @@ export default defineComponent({
     Product,
   },
   setup() {
-    const data = ref([]);
     const pagination = ref({
       defaultPageSize: 10,
       total: 100,
@@ -144,25 +143,25 @@ export default defineComponent({
       }, 2000);
     };
 
-    const fetchData = async () => {
-      try {
-        const res: ResDataType = await request.get('/api/get-purchase-list');
-        if (res.code === 0) {
-          const { list = [] } = res.data;
-          data.value = list;
+    const { data } = useRequest<ResDataType, any, any[]>(
+      'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-purchase-list',
+      {
+        initialData: [],
+        formatResult: (res) => {
+          if (res.code === 0) return res.data.list;
+          return [];
+        },
+        onSuccess: (res) => {
           pagination.value = {
             ...pagination.value,
-            total: list.length,
+            total: res.length,
           };
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    };
+        },
+      },
+    );
 
     onMounted(() => {
       stepUpdate();
-      fetchData();
     });
 
     const visible = ref(false);
