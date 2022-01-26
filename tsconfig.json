@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "types": ["vite/client"],
     "module": "esnext",
     "moduleResolution": "node",
     "jsx": "preserve",
