@@ -1,5 +1,5 @@
 <template>
-  <t-popup expand-animation placement="bottom-right" trigger="click">
+  <t-popup expand-animation placement="bottom-right" trigger="click" :visible="visible">
     <template #content>
       <div class="header-msg">
         <div class="header-msg-top">
@@ -38,7 +38,7 @@
       </div>
     </template>
     <t-badge :count="unreadMsg.length" :offset="[15, 21]">
-      <t-button theme="default" shape="square" variant="text">
+      <t-button theme="default" shape="square" variant="text" @click="toggleVisible">
         <t-icon name="mail" />
       </t-button>
     </t-badge>
@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { NotificationItem } from '@/interface';
 import { useNotificationStore } from '@/store/modules/notification';
@@ -74,11 +74,20 @@ export default defineComponent({
       notificationStore.setMsgData(changeMsg);
     };
 
+    const visible = ref(false);
+
+    const toggleVisible = () => {
+      visible.value = !visible.value;
+    };
+
     const goDetail = () => {
       router.push('/detail/secondary');
+      visible.value = false;
     };
 
     return {
+      toggleVisible,
+      visible,
       goDetail,
       unreadMsg,
       setRead,

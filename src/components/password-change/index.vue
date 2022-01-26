@@ -44,9 +44,11 @@
   </div>
 </template>
 <script lang="ts">
-import { computed, defineComponent, PropType, reactive, ref } from 'vue';
-import { CustomValidator, FormRule } from 'tdesign-vue-next';
-import { IChangePasswordData } from '@/api/interface/user';
+import { computed, defineComponent, PropType, reactive } from 'vue';
+import { useRequest } from 'vue-request';
+import { CustomValidator, FormRule, MessagePlugin, SubmitContext } from 'tdesign-vue-next';
+import { useRouter } from 'vue-router';
+import { IChangePasswordData } from '@/types/user';
 import * as USER_API from '@/api/user';
 
 const INITIAL_DATA = {
@@ -65,7 +67,7 @@ export default defineComponent({
   },
   emits: ['update:visible'],
   setup(props, { emit }) {
-    const loading = ref(false);
+    const router = useRouter();
 
     // dialog visibility
     const innerVisible = computed({
@@ -88,24 +90,27 @@ export default defineComponent({
       ],
     };
 
-    const close = () => {
-      if (!loading.value) emit('update:visible', false);
-      // else
-    };
-
     const onReset = () => {
       Object.assign(formData, INITIAL_DATA);
     };
 
-    const onSubmit = async () => {
-      try {
-        loading.value = true;
-        await USER_API.changePassword(formData);
-        loading.value = false;
-        close();
-      } catch (e) {
-        loading.value = false;
-        console.log(e);
+    const SubmitSuccess = () => {
+      MessagePlugin.success('密码成功修改，请重新登录');
+      // eslint-disable-next-line no-use-before-define
+      close();
+      router.push('/login');
+    };
+    const { loading, run } = useRequest(USER_API.changePassword, {
+      manual: true,
+      onSuccess: SubmitSuccess,
+    });
+    const close = () => {
+      if (!loading.value) emit('update:visible', false);
+    };
+
+    const onSubmit: (context: SubmitContext<FormData>) => void = ({ validateResult }) => {
+      if (validateResult === true) {
+        run(formData);
       }
     };
     return {

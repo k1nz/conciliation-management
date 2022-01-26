@@ -33,7 +33,7 @@ export const useUserStore = defineStore('user', {
     setUserInfo(userInfo: IUserType) {
       this.userInfo = userInfo;
     },
-    async login(loginInfo: ILoginInfoType): Promise<void> | never {
+    async login(loginInfo: ILoginInfoType) {
       const loginResp = await USER_API.login(loginInfo);
       this.setToken(loginResp.authToken);
       localStorage.setItem('userInfo', JSON.stringify(loginResp.user)); // 存储用户信息至storage, 由路由守卫将用户信息存入store中
@@ -42,7 +42,7 @@ export const useUserStore = defineStore('user', {
       const userInfo: IUserType = JSON.parse(localStorage.getItem('userInfo'));
       this.setUserInfo(userInfo);
     },
-    async logout(): Promise<void> | never {
+    async logout() {
       this.removeToken();
       this.setUserInfo(InitUserInfo);
       await USER_API.logout();
@@ -53,12 +53,12 @@ export const useUserStore = defineStore('user', {
     getToken(): string {
       return this.token;
     },
-    getRoles(): string[] {
-      if (this.userInfo.admin) {
+    getRoles(state): string[] {
+      if (state.userInfo.admin) {
         return ['ADMIN'];
       }
       const roleList: string[] = [];
-      const { roles } = this.userInfo;
+      const { roles } = state.userInfo;
       roles?.forEach((role) => {
         role?.privs?.forEach((priv) => {
           roleList.push(priv.privCode);
