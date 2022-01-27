@@ -1,8 +1,8 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
-import STYLE_CONFIG from '@/config/style';
+import STYLE_CONFIG, { IDefaultStyle } from '@/config/style';
 import { COLOR_TOKEN, ColorSeries, ColorToken, LIGHT_CHART_COLORS, DARK_CHART_COLORS } from '@/config/color';
 
-type IInitStateType = typeof STYLE_CONFIG & {
+type IInitStateType = IDefaultStyle & {
   showSettingPanel: boolean;
   colorList: typeof COLOR_TOKEN;
   chartColors: typeof LIGHT_CHART_COLORS;
@@ -10,16 +10,16 @@ type IInitStateType = typeof STYLE_CONFIG & {
 
 interface IStateType extends IInitStateType {
   isAsideFooter: boolean;
-  showSettingPanel: boolean;
 }
 
 // pinia
 export const useSettingStore = defineStore('setting', {
-  state: () => ({
+  state: (): IStateType => ({
     ...STYLE_CONFIG,
     showSettingPanel: false,
     colorList: COLOR_TOKEN,
     chartColors: LIGHT_CHART_COLORS,
+    isAsideFooter: true,
   }),
   actions: {
     async changeTheme(payload: Record<string, unknown>) {
@@ -39,6 +39,7 @@ export const useSettingStore = defineStore('setting', {
         showSettingPanel: this.showSettingPanel,
         colorList: this.colorList,
         chartColors: this.chartColors,
+        isAsideFooter: this.isAsideFooter,
         // ...payload,
       };
       Object.assign(newPayload, payload);
@@ -113,20 +114,16 @@ export const useSettingStore = defineStore('setting', {
     },
   },
   getters: {
-    // showHeader() { return this.showHeader },
-    showSidebar() {
+    showSidebar(): boolean {
       return this.layout !== 'top';
     },
-    showSidebarLogo() {
+    showSidebarLogo(): boolean {
       return this.layout === 'side';
     },
-    showHeaderLogo() {
+    showHeaderLogo(): boolean {
       return this.layout !== 'side';
     },
-    showFooter() {
-      return this.showFooter;
-    },
-    getMode() {
+    getMode(): 'dark' | 'light' {
       if (this.mode === 'auto') {
         const media = window.matchMedia('(prefers-color-scheme:dark)');
         if (media.matches) {

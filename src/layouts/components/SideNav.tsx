@@ -5,48 +5,9 @@ import pgk from '../../../package.json';
 import MenuContent from './MenuContent';
 import tLogo from '@/assets/assets-t-logo.svg?component';
 import { useSettingStore } from '@/store/modules/setting';
+import { MenuRoute } from '@/interface';
 
 const MIN_POINT = 992 - 1;
-
-const useComputed = (props) => {
-  const settingStore = useSettingStore();
-
-  const collapsed = computed(() => settingStore.isSidebarCompact);
-
-  const sideNavCls = computed(() => {
-    const { isCompact } = props;
-    return [
-      `${prefix}-sidebar-layout`,
-      {
-        [`${prefix}-sidebar-compact`]: isCompact,
-      },
-    ];
-  });
-
-  const menuCls = computed(() => {
-    const { showLogo, isFixed, layout } = props;
-    return [
-      `${prefix}-side-nav`,
-      {
-        [`${prefix}-side-nav-no-logo`]: !showLogo,
-        [`${prefix}-side-nav-no-fixed`]: !isFixed,
-        [`${prefix}-side-nav-mix-fixed`]: layout === 'mix' && isFixed,
-      },
-    ];
-  });
-
-  const layoutCls = computed(() => {
-    const { layout } = props;
-    return [`${prefix}-side-nav-${layout}`, `${prefix}-sidebar-layout`];
-  });
-
-  return {
-    collapsed,
-    sideNavCls,
-    menuCls,
-    layoutCls,
-  };
-};
 
 export default defineComponent({
   name: 'SideNav',
@@ -56,7 +17,7 @@ export default defineComponent({
   },
   props: {
     menu: {
-      type: Array as PropType<string[]>,
+      type: Array as PropType<MenuRoute[]>,
       default: () => [],
     },
     showLogo: {
@@ -85,6 +46,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    type PropsType = typeof props;
     const settingStore = useSettingStore();
     const router = useRouter();
 
@@ -126,6 +88,46 @@ export default defineComponent({
       router.push('/dashboard/base');
     };
 
+    const useComputed = (props: PropsType) => {
+      const settingStore = useSettingStore();
+
+      const collapsed = computed(() => settingStore.isSidebarCompact);
+
+      const sideNavCls = computed(() => {
+        const { isCompact } = props;
+        return [
+          `${prefix}-sidebar-layout`,
+          {
+            [`${prefix}-sidebar-compact`]: isCompact,
+          },
+        ];
+      });
+
+      const menuCls = computed(() => {
+        const { showLogo, isFixed, layout } = props;
+        return [
+          `${prefix}-side-nav`,
+          {
+            [`${prefix}-side-nav-no-logo`]: !showLogo,
+            [`${prefix}-side-nav-no-fixed`]: !isFixed,
+            [`${prefix}-side-nav-mix-fixed`]: layout === 'mix' && isFixed,
+          },
+        ];
+      });
+
+      const layoutCls = computed(() => {
+        const { layout } = props;
+        return [`${prefix}-side-nav-${layout}`, `${prefix}-sidebar-layout`];
+      });
+
+      return {
+        collapsed,
+        sideNavCls,
+        menuCls,
+        layoutCls,
+      };
+    };
+
     return {
       prefix,
       ...useComputed(props),
@@ -158,7 +160,7 @@ export default defineComponent({
               ),
             operations: () => (
               <span class="version-container">
-                {!this.collapsed && 'TDesign Starter'} {pgk.version}
+                {!this.collapsed && 'Consiliation-Management'} {pgk.version}
               </span>
             ),
           }}

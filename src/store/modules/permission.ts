@@ -2,14 +2,15 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 import { RouteRecordRaw } from 'vue-router';
 import router, { asyncRouterList, page404 } from '@/router';
+import { MenuRoute } from '@/interface';
 
-function filterPermissionsRouters(routes, roles) {
-  const res = [];
+function filterPermissionsRouters(routes: RouteRecordRaw[], roles: string[]): RouteRecordRaw[] {
+  const res: RouteRecordRaw[] = [];
   routes.forEach((route) => {
-    const children = [];
+    const children: RouteRecordRaw[] = [];
     route.children?.forEach((childRouter) => {
-      const roleCode = childRouter.meta?.roleCode || childRouter.name;
-      if (roles.indexOf(roleCode) !== -1) {
+      const roleCode: string = (childRouter.meta?.roleCode as string) || (childRouter.name as string);
+      if (roleCode && roles.indexOf(roleCode) !== -1) {
         children.push(childRouter);
       }
     });
@@ -23,7 +24,7 @@ function filterPermissionsRouters(routes, roles) {
 
 export interface permissionState {
   whiteListRouters: Array<string>;
-  routers: Array<RouteRecordRaw>;
+  routers: MenuRoute[];
 }
 
 export const usePermStore = defineStore('permission', {
@@ -32,8 +33,8 @@ export const usePermStore = defineStore('permission', {
     routers: [],
   }),
   actions: {
-    setRouters(routers) {
-      this.routers = routers;
+    setRouters(routers: RouteRecordRaw[]) {
+      this.routers = routers as MenuRoute[];
     },
     async initRoutes(roles: string[]) {
       let accessedRouters;
@@ -47,21 +48,21 @@ export const usePermStore = defineStore('permission', {
 
       this.setRouters(accessedRouters);
       // register routers
-      this.routers.concat(page404).forEach((item) => {
+      (this.routers as RouteRecordRaw[]).concat(page404).forEach((item) => {
         router.addRoute(item);
       });
     },
     async restore() {
       // remove routers
-      this.routers.concat(page404).forEach((item) => {
-        router.removeRoute(item.name);
+      (this.routers as RouteRecordRaw[]).concat(page404).forEach((item) => {
+        if (item.name) router.removeRoute(item.name);
       });
       this.setRouters([]);
     },
   },
   getters: {
-    getRouters() {
-      return this.routers;
+    getRouters(state) {
+      return state.routers;
     },
   },
 });

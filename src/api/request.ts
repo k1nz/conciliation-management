@@ -56,6 +56,7 @@ class Request {
     this.instance.interceptors.request.use(
       (config: AxiosRequestConfig) => {
         const token = localStorage.getItem(TOKEN_NAME);
+        config.headers = config.headers ?? {};
         if (token) config.headers['X-Auth-Token'] = token;
         return config;
       },
@@ -73,7 +74,7 @@ class Request {
           }
           // TODO：无效令牌重新登录
           try {
-            data.customMsg = ERR_MESSAGE.filter((e) => e.value === data.errCode)[0].message;
+            data.customMsg = ERR_MESSAGE.find((e) => e.value === data.errCode)?.message;
           } catch (err) {
             console.log(err);
           }

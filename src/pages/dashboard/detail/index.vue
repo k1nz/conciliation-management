@@ -155,7 +155,7 @@ export default defineComponent({
         scatterChart.setOption(getScatterDataSet({ ...settingStore.chartColors }));
       },
       onMaterialChange(value: string[]) {
-        lineChart.setOption(getFolderLineDataSet({ dateTime: value, ...(settingStore.chartColors as any) }));
+        lineChart.setOption(getFolderLineDataSet({ dateTime: value, ...settingStore.chartColors }));
       },
     };
   },

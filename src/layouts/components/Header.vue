@@ -170,7 +170,7 @@ export default defineComponent({
       changePasswordVisible.value = true;
     };
 
-    const handleNav = (url) => {
+    const handleNav = (url: string) => {
       router.push(url);
     };
 

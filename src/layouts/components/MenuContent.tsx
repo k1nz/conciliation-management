@@ -19,13 +19,14 @@ const getMenuList = (list: MenuRoute[], basePath?: string): MenuRoute[] => {
   });
 };
 
-const renderIcon = (item) => {
+const renderIcon = (item: MenuRoute) => {
   if (typeof item.icon === 'string') {
     return () => item.icon && <t-icon name={item.icon}></t-icon>;
   }
-  if (item.icon && typeof item.icon.render === 'function') {
+  if (item.icon?.render instanceof Function) {
+    const { render } = item.icon;
     return () =>
-      h(item.icon.render(), {
+      h(render, {
         class: 't-icon',
       });
   }

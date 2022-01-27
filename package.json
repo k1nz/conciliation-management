@@ -1,6 +1,6 @@
 {
-  "name": "tdesign-demo",
-  "version": "0.0.1",
+  "name": "consiliation-management",
+  "version": "1.0.0",
   "scripts": {
     "dev:mock": "vite --open --mode mock",
     "dev": "vite --open --mode development",

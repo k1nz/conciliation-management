@@ -256,7 +256,7 @@ export default defineComponent({
     let moneyChart: echarts.ECharts;
     const renderMoneyChart = () => {
       if (!moneyContainer) {
-        moneyContainer = document.getElementById('moneyContainer');
+        moneyContainer = document.getElementById('moneyContainer')!;
       }
       moneyChart = echarts.init(moneyContainer);
       moneyChart.setOption(constructInitDashboardDataset('line'));
@@ -267,7 +267,7 @@ export default defineComponent({
     let refundChart: echarts.ECharts;
     const renderRefundChart = () => {
       if (!refundContainer) {
-        refundContainer = document.getElementById('refundContainer');
+        refundContainer = document.getElementById('refundContainer')!;
       }
       refundChart = echarts.init(refundContainer);
       refundChart.setOption(constructInitDashboardDataset('bar'));
@@ -278,10 +278,10 @@ export default defineComponent({
     let stokeChart: echarts.ECharts;
     const renderStokeChart = () => {
       if (!stokeContainer) {
-        stokeContainer = document.getElementById('stokeContainer');
+        stokeContainer = document.getElementById('stokeContainer')!;
       }
       stokeChart = echarts.init(stokeContainer);
-      stokeChart.setOption(constructInitDataset({ dateTime: LAST_7_DAYS, ...(settingStore.chartColors as any) }));
+      stokeChart.setOption(constructInitDataset({ dateTime: LAST_7_DAYS, ...settingStore.chartColors }));
     };
 
     // monitorChart
@@ -289,7 +289,7 @@ export default defineComponent({
     let monitorChart: echarts.ECharts;
     const renderMonitorChart = () => {
       if (!monitorContainer) {
-        monitorContainer = document.getElementById('monitorContainer');
+        monitorContainer = document.getElementById('monitorContainer')!;
       }
       monitorChart = echarts.init(monitorContainer);
       monitorChart.setOption(getLineChartDataSet({ ...settingStore.chartColors }));
@@ -300,10 +300,10 @@ export default defineComponent({
     let countChart: echarts.ECharts;
     const renderCountChart = () => {
       if (!countContainer) {
-        countContainer = document.getElementById('countContainer');
+        countContainer = document.getElementById('countContainer')!;
       }
       countChart = echarts.init(countContainer);
-      countChart.setOption(getPieChartDataSet(settingStore.chartColors as any));
+      countChart.setOption(getPieChartDataSet({ radius: 42, ...settingStore.chartColors }));
     };
 
     const renderCharts = () => {
@@ -405,10 +405,10 @@ export default defineComponent({
       BUY_COLUMNS,
       onCurrencyChange(checkedValues: string[]) {
         currentMonth.value = getThisMonth(checkedValues);
-        monitorChart.setOption(getLineChartDataSet({ dateTime: checkedValues, ...(settingStore.chartColors as any) }));
+        monitorChart.setOption(getLineChartDataSet({ dateTime: checkedValues, ...settingStore.chartColors }));
       },
       onStokeDataChange(checkedValues: string[]) {
-        stokeChart.setOption(constructInitDataset({ dateTime: checkedValues, ...(settingStore.chartColors as any) }));
+        stokeChart.setOption(constructInitDataset({ dateTime: checkedValues, ...settingStore.chartColors }));
       },
       rehandleClickOp(val: MouseEvent) {
         console.log(val);

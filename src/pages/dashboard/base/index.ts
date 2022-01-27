@@ -177,7 +177,7 @@ export function constructInitDataset({
   dateTime = [],
   placeholderColor,
   borderColor,
-}: { dateTime: Array<string> } & Record<string, string>) {
+}: { dateTime: Array<string> } & Record<string, string | string[]>) {
   // const dataset: Array<Array<string>> = [['时间'], ['入库'], ['出库']];
   const divideNum = 10;
   const timeArray = [];
@@ -275,7 +275,7 @@ export function getSmoothLineDataSet({
   dateTime = [],
   placeholderColor,
   borderColor,
-}: { dateTime?: Array<string> } & Record<string, string>) {
+}: { dateTime?: Array<string> } & Record<string, string | string[]>) {
   let dateArray: Array<string> = ['00:00', '02:00', '04:00', '06:00'];
   if (dateTime.length > 0) {
     const divideNum = 7;
@@ -382,7 +382,7 @@ export function getFolderLineDataSet({
   dateTime = [],
   placeholderColor,
   borderColor,
-}: { dateTime?: Array<string> } & Record<string, string>) {
+}: { dateTime?: Array<string> } & Record<string, string | string[]>) {
   let dateArray: Array<string> = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   if (dateTime.length > 0) {
     const divideNum = 7;
@@ -542,7 +542,7 @@ export function getLineChartDataSet({
   dateTime = [],
   placeholderColor,
   borderColor,
-}: { dateTime?: Array<string> } & Record<string, string>) {
+}: { dateTime?: Array<string> } & Record<string, string | string[]>) {
   const divideNum = 10;
   const timeArray = [];
   const inArray = [];
@@ -678,7 +678,7 @@ export function getScatterDataSet({
   dateTime = [],
   placeholderColor,
   borderColor,
-}: { dateTime?: Array<string> } & Record<string, string>): any {
+}: { dateTime?: Array<string> } & Record<string, string | string[]>): any {
   const divideNum = 40;
   const timeArray = [];
   const inArray = [];
@@ -974,7 +974,7 @@ export function get2ColBarChartDataSet({
   isMonth = false,
   placeholderColor,
   borderColor,
-}: { isMonth?: boolean } & Record<string, string>) {
+}: { isMonth?: boolean } & Record<string, string | boolean>) {
   let lastYearListCopy = lastYearList.concat([]);
   let thisYearListCopy = lastYearList.concat([]);
 
@@ -1076,7 +1076,7 @@ export function getPieChartDataSet({
   radius = 42,
   textColor,
   placeholderColor,
-}: { radius: number } & Record<string, string>) {
+}: { radius: number } & Record<string, string | number>) {
   return {
     color: chartListColor(),
     tooltip: {

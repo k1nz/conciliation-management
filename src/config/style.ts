@@ -1,4 +1,19 @@
-export default {
+export interface IDefaultStyle {
+  showFooter: boolean;
+  isSidebarCompact: boolean;
+  showBreadcrumb: boolean;
+  mode: 'light' | 'dark' | 'auto';
+  layout: 'side' | 'top' | 'mix';
+  splitMenu: boolean;
+  isFooterAside: boolean;
+  isSidebarFixed: boolean;
+  isHeaderFixed: boolean;
+  showHeader: boolean;
+  backgroundTheme: string;
+  brandTheme: string;
+}
+
+const defaultStyle: IDefaultStyle = {
   showFooter: true,
   isSidebarCompact: false,
   showBreadcrumb: false,
@@ -12,3 +27,5 @@ export default {
   backgroundTheme: 'blueGrey',
   brandTheme: 'default',
 };
+
+export default defaultStyle;

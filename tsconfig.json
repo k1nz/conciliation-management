@@ -3,6 +3,7 @@
     "target": "esnext",
     "types": ["vite/client"],
     "module": "esnext",
+    "strict": true,
     "moduleResolution": "node",
     "jsx": "preserve",
     "sourceMap": true,

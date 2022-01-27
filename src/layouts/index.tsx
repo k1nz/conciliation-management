@@ -62,7 +62,7 @@ export default defineComponent({
             showLogo={settingStore.showSidebarLogo}
             layout={settingStore.layout}
             isFixed={settingStore.isSidebarFixed}
-            menu={sideMenu.value as any}
+            menu={sideMenu.value}
             theme={settingStore.mode}
             isCompact={settingStore.isSidebarCompact}
           />
@@ -78,7 +78,7 @@ export default defineComponent({
             theme={settingStore.mode}
             layout={settingStore.layout}
             isFixed={settingStore.isHeaderFixed}
-            menu={headerMenu.value as any}
+            menu={headerMenu.value}
             isCompact={settingStore.isSidebarCompact}
           />
         )
@@ -106,21 +106,13 @@ export default defineComponent({
       <div>
         {settingStore.layout === 'side' ? (
           <t-layout class={mainLayoutCls.value} key="side">
-            <t-aside>
-              <RenderSidebar />
-            </t-aside>
-            <t-layout>
-              <RenderHeader />
-              <RenderContent />
-            </t-layout>
+            <t-aside>{RenderSidebar()}</t-aside>
+            <t-layout>{[RenderHeader(), RenderContent()]}</t-layout>
           </t-layout>
         ) : (
           <t-layout key="no-side">
-            <RenderHeader />
-            <t-layout class={mainLayoutCls.value}>
-              <RenderSidebar />
-              <RenderContent />
-            </t-layout>
+            {RenderHeader()}
+            <t-layout class={mainLayoutCls.value}>{[RenderSidebar(), RenderContent()]}</t-layout>
           </t-layout>
         )}
         <TdesignSetting />
