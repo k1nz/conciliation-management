@@ -20,3 +20,5 @@ const requestInstance = new Request({
 });
 
 export default requestInstance;
+export * from './system';
+export * from './user';

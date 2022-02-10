@@ -1,9 +1,10 @@
 // vuex
 import { acceptHMRUpdate, defineStore } from 'pinia';
+import { MessagePlugin } from 'tdesign-vue-next';
 import * as USER_API from '@/api/user';
 import { TOKEN_NAME } from '@/config/global';
-// eslint-disable-next-line
-import { ILoginInfoType, IRolesType, IUserType } from '@/interface';
+import { ILoginInfoType, IUserType } from '@/types/user';
+import router from '@/router';
 
 const InitUserInfo: IUserType | Record<string, unknown> = {
   // roles: [],
@@ -17,14 +18,18 @@ export interface IUserState {
 
 export const useUserStore = defineStore('user', {
   state: (): IUserState => ({
-    token: localStorage.getItem(TOKEN_NAME),
+    token: localStorage.getItem(TOKEN_NAME) || '',
     userInfo: InitUserInfo,
   }),
 
   actions: {
-    setToken(token: string) {
-      localStorage.setItem(TOKEN_NAME, token);
-      this.token = token;
+    setToken(token: string | undefined) {
+      if (token) {
+        localStorage.setItem(TOKEN_NAME, token);
+        this.token = token;
+      } else {
+        MessagePlugin.error('未知错误: 10001');
+      }
     },
     removeToken() {
       localStorage.removeItem(TOKEN_NAME);
@@ -35,12 +40,24 @@ export const useUserStore = defineStore('user', {
     },
     async login(loginInfo: ILoginInfoType) {
       const loginResp = await USER_API.login(loginInfo);
-      this.setToken(loginResp.authToken);
-      localStorage.setItem('userInfo', JSON.stringify(loginResp.user)); // 存储用户信息至storage, 由路由守卫将用户信息存入store中
+      this.setToken(loginResp.data?.[0].authToken);
+      localStorage.setItem('userInfo', JSON.stringify(loginResp.data?.[0].user)); // 存储用户信息至storage, 由路由守卫将用户信息存入store中
+      const redirect = router.currentRoute.value.query?.redirect;
+      if (typeof redirect === 'string') {
+        router.push(redirect);
+      } else {
+        router.push('/home/dashboard');
+      }
     },
     async getUserInfo() {
-      const userInfo: IUserType = JSON.parse(localStorage.getItem('userInfo'));
-      this.setUserInfo(userInfo);
+      const userInfoOrigin = localStorage.getItem('userInfo');
+      if (userInfoOrigin ?? false) {
+        const userInfo: IUserType = JSON.parse(localStorage.getItem('userInfo')!);
+        this.setUserInfo(userInfo);
+      } else {
+        router.push('/login');
+        MessagePlugin.error('用户信息丢失，请重新登录');
+      }
     },
     async logout() {
       this.removeToken();

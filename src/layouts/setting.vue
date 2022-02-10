@@ -43,7 +43,7 @@
               @visible-change="onPopupVisibleChange"
             >
               <template #content>
-                <color-picker :theme="mode" @changeColor="changeColor" />
+                <color-picker :theme="mode" @change-color="changeColor" />
               </template>
               <t-radio-button
                 :value="COLOR_OPTIONS[COLOR_OPTIONS.length - 1]"

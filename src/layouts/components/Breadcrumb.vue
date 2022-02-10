@@ -10,6 +10,11 @@
 import { defineComponent, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+interface IBreadcrumbsType {
+  path: string;
+  to: string;
+  title: string;
+}
 export default defineComponent({
   name: 'TdesignStarterBreadcrumb',
   props: {
@@ -26,10 +31,10 @@ export default defineComponent({
         breadcrumbArray.push({
           path,
           to: breadcrumbArray[idx - 1] ? `/${breadcrumbArray[idx - 1].path}/${path}` : `/${path}`,
-          title: route.matched[idx].meta.title || path,
+          title: (route.matched[idx].meta.title as string) || path,
         });
         return breadcrumbArray;
-      }, []);
+      }, [] as IBreadcrumbsType[]);
       return breadcrumbs;
     });
 

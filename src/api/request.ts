@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { TOKEN_NAME } from '@/config/global';
 import { IRequestConfig, IDataType } from '@/types/request';
+import router from '@/router';
 
 const CODE = {
   LOGIN_TIMEOUT: -5,
@@ -66,11 +67,11 @@ class Request {
     );
     // 全局响应拦截器
     this.instance.interceptors.response.use(
-      (response: AxiosResponse<IDataType<any[]>, any>) => {
+      (response: AxiosResponse<IDataType<any>, any>) => {
         if (response.status === 200) {
           const { data } = response;
           if (data.errCode === CODE.REQUEST_SUCCESS) {
-            return data?.data?.[0];
+            return data;
           }
           // TODO：无效令牌重新登录
           try {
@@ -84,43 +85,65 @@ class Request {
         return response;
       },
       (err) => {
-        console.log('NETERROR', err);
-
-        const { config } = err;
-        MessagePlugin.error('网络异常');
-
-        // 尝试重连
-        if (!config || !config.retry) return Promise.reject(err);
-
-        config.retryCount = config.retryCount || 0;
-        if (config.retryCount >= config.retry) {
+        if (err.response === undefined) {
+          MessagePlugin.error('网络异常');
           return Promise.reject(err);
         }
-        config.retryCount += 1;
-        const backoff = new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(null);
-          }, config.retryDelay || 1);
-        });
-        return backoff.then(() => this.instance.request(config));
+
+        switch (err.response.status) {
+          case 403: {
+            MessagePlugin.error('无效令牌，请重新登录');
+            router.push(`/login?redirect=${router.currentRoute.value.fullPath}`);
+            return Promise.reject(err);
+          }
+          default: {
+            console.log('NETERROR', err);
+
+            const { config } = err;
+            MessagePlugin.error('网络异常');
+
+            // 尝试重连
+            if (!config || !config.retry) return Promise.reject(err);
+
+            config.retryCount = config.retryCount || 0;
+            if (config.retryCount >= config.retry) {
+              return Promise.reject(err);
+            }
+            config.retryCount += 1;
+            const backoff = new Promise((resolve) => {
+              setTimeout(() => {
+                resolve(null);
+              }, config.retryDelay || 1);
+            });
+            return backoff.then(() => this.instance.request(config));
+          }
+        }
       },
     );
   }
 
-  public get<ResponseType>(config: IRequestConfig<ResponseType>): Promise<ResponseType> {
-    return this.instance.request<any, ResponseType, any>({ ...config, method: 'GET' });
+  public get<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+    return this.instance.request<any, IDataType<ResponseType>, any>({
+      ...config,
+      method: 'GET',
+      params: config.data,
+    });
   }
 
-  public post<ResponseType>(config: IRequestConfig<ResponseType>): Promise<ResponseType> {
-    return this.instance.request<any, ResponseType, any>({ ...config, method: 'POST' });
+  public post<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+    return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'POST' });
   }
 
-  public delete<ResponseType>(config: IRequestConfig<ResponseType>): Promise<ResponseType> {
-    return this.instance.request<any, ResponseType, any>({ ...config, method: 'DELETE' });
+  public delete<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+    return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'DELETE' });
   }
 
-  public patch<ResponseType>(config: IRequestConfig<ResponseType>): Promise<ResponseType> {
-    return this.instance.request<any, ResponseType, any>({ ...config, method: 'PATCH' });
+  public patch<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+    return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'PATCH' });
+  }
+
+  public put<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+    return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'PUT' });
   }
 }
 

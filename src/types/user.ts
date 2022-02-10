@@ -6,15 +6,18 @@ export interface IChangePasswordData {
   reNewPwd: string;
 }
 
+export interface IPrivateObject {
+  privCode: string;
+  privName: string;
+}
+
 export interface IRoleType {
   roleId: string;
   system: boolean;
   roleName: string;
-  privs: {
-    privCode: string;
-    privName: string;
-  }[];
+  privs: IPrivateObject[];
 }
+export type IRolesType = Array<IRoleType>;
 
 export interface IUserType {
   userId?: string;
@@ -29,7 +32,7 @@ export interface IUserType {
   createUser?: string;
   createUserName?: string;
   dataGrps?: string[];
-  roles?: IRoleType[];
+  roles?: IRolesType;
 }
 
 export interface ILoginInfoType {

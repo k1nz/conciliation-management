@@ -18,3 +18,10 @@ export interface IDataType<T> {
   count?: number;
   customMsg?: string;
 }
+
+export interface IReqCondition {
+  __limit?: number | string;
+  __page?: number | string;
+  __sortBy?: string;
+  __fields?: string;
+}

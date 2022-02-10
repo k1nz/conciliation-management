@@ -48,10 +48,10 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { MessagePlugin } from 'tdesign-vue-next';
+import { MessagePlugin, SubmitContext } from 'tdesign-vue-next';
 import { useCounter } from '@/hooks';
 import { useUserStore } from '@/store/modules/user';
-import { ILoginInfoType } from '@/interface';
+import { ILoginInfoType } from '@/types/user';
 
 const INITIAL_DATA: ILoginInfoType = {
   userName: 'admin',
@@ -82,14 +82,14 @@ export default defineComponent({
     const userStore = useUserStore();
     const loading = ref(false);
 
-    const onSubmit = async ({ validateResult }) => {
+    const onSubmit = async ({ validateResult }: SubmitContext<FormData>) => {
       if (validateResult === true) {
         try {
           loading.value = true;
           await userStore.login(formData.value);
           MessagePlugin.success('登陆成功');
           router.push({
-            path: '/dashboard/base',
+            path: '/system/user',
           });
         } catch (e) {
           console.log(e);
