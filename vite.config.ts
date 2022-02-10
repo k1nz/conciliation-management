@@ -16,7 +16,7 @@ export default defineConfig({
   },
 
   plugins: [
-    createVuePlugin(),
+    createVuePlugin({ reactivityTransform: true }),
     vueJsx(),
     viteMockServe({
       mockPath: 'mock',
