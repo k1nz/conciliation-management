@@ -38,7 +38,7 @@ router.beforeEach(async (to, from, next) => {
         next({ ...to });
       } catch (error) {
         console.error(error);
-        MessagePlugin.error(error);
+        MessagePlugin.error('未知错误');
         await userStore.removeToken();
         next(`/login?redirect=${to.path}`);
         NProgress.done();
@@ -46,6 +46,7 @@ router.beforeEach(async (to, from, next) => {
     }
   } else {
     /* white list router */
+    console.log('white list', { ...to });
     if (whiteListRouters.indexOf(to.path) !== -1) {
       next();
     } else {

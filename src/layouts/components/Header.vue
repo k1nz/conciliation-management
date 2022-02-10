@@ -2,7 +2,7 @@
   <div :class="layoutCls">
     <t-head-menu :class="menuCls" :theme="theme" expand-type="popup" :value="active">
       <template #logo>
-        <span v-if="showLogo" class="header-logo-container" @click="handleNav('/dashboard/base')">
+        <span v-if="showLogo" class="header-logo-container" @click="handleNav('/home/dashboard')">
           <span class="project-name">人民调解案件管理系统</span>
           <!-- <tLogoFull class="t-logo" /> -->
         </span>

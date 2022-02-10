@@ -40,3 +40,8 @@ export const NOTIFICATION_TYPES = {
   middle: 'warning',
   high: 'danger',
 };
+
+export enum GENDER_TYPE {
+  MALE = 1,
+  FEMALE = 2,
+}

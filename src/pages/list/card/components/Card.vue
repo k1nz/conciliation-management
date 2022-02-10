@@ -65,10 +65,12 @@ import {
 } from 'tdesign-icons-vue-next';
 
 export interface CardProductType {
-  type: number;
+  index: number;
   isSetup: boolean;
-  description: string;
+  type: number;
+  banner: string;
   name: string;
+  description: string;
 }
 
 export default defineComponent({
@@ -119,10 +121,10 @@ export default defineComponent({
       cardLogoClass,
       cardControlClass,
       typeMap: ['A', 'B', 'C', 'D', 'E'],
-      handleClickManage(product) {
+      handleClickManage(product: CardProductType) {
         emit('manage-product', product);
       },
-      handleClickDelete(product) {
+      handleClickDelete(product: CardProductType) {
         emit('delete-item', product);
       },
     };

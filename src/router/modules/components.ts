@@ -4,7 +4,7 @@ import DetailIcon from '@/assets/assets-slide-detail.svg';
 
 export default [
   {
-    path: '/list',
+    path: '/list-components',
     name: 'list',
     component: () => import('@/layouts'),
     redirect: '/list/base',

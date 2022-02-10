@@ -1,5 +1,6 @@
 import { ref, Ref, onUnmounted, onMounted } from 'vue';
 import * as echarts from 'echarts/core';
+import { useUserStore } from '@/store';
 
 /**
  * eChart hook
@@ -39,7 +40,8 @@ export const useChart = (domId: string): Ref<echarts.ECharts> => {
  * @returns
  */
 export const useCounter = (duration = 60): [Ref<number>, () => void] => {
-  let intervalTimer;
+  // eslint-disable-next-line no-undef
+  let intervalTimer: NodeJS.Timer;
   onUnmounted(() => {
     clearInterval(intervalTimer);
   });
@@ -59,4 +61,17 @@ export const useCounter = (duration = 60): [Ref<number>, () => void] => {
       }, 1000);
     },
   ];
+};
+
+/**
+ * permission utils
+ */
+export const usePermissionCheck = () => {
+  const userStore = useUserStore();
+  const roles = userStore.getRoles;
+  const hasPermission = (permissionArr: string[]): boolean => {
+    return [...permissionArr, 'ADMIN'].some((e) => roles.includes(e));
+  };
+
+  return hasPermission;
 };

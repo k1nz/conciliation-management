@@ -15,7 +15,7 @@
       <div class="list-card-items">
         <t-row :gutter="[16, 12]">
           <t-col
-            v-for="product in data.slice(
+            v-for="product in data?.slice(
               pagination.pageSize * (pagination.current - 1),
               pagination.pageSize * pagination.current,
             )"
@@ -59,19 +59,26 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, Ref } from 'vue';
 import { SearchIcon } from 'tdesign-icons-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { useRequest } from 'vue-request';
-import Card from './components/Card.vue';
+import Card, { CardProductType } from './components/Card.vue';
 import DialogForm from './components/DialogForm.vue';
 import { ResDataType } from '@/interface';
 
-const INITIAL_DATA = {
+const INITIAL_DATA: {
+  name: string;
+  status: string;
+  description: string;
+  type: number | undefined;
+  mark?: string;
+  amount?: number;
+} = {
   name: '',
   status: '',
   description: '',
-  type: '',
+  type: undefined,
   mark: '',
   amount: 0,
 };
@@ -85,9 +92,9 @@ export default defineComponent({
   },
   setup() {
     const pagination = ref({ current: 1, pageSize: 12, total: 0 });
-    const deleteProduct = ref(undefined);
+    const deleteProduct: Ref<CardProductType | undefined> = ref(undefined);
 
-    const { data, loading } = useRequest<ResDataType, any, any[]>(
+    const { data, loading } = useRequest<ResDataType, any, CardProductType[]>(
       'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-card-list',
       {
         initialData: [],
@@ -105,7 +112,7 @@ export default defineComponent({
     );
 
     const confirmBody = computed(() =>
-      deleteProduct.value ? `确认删除后${deleteProduct.value.name}的所有产品信息将被清空, 且无法恢复` : '',
+      deleteProduct.value ? `确认删除后${deleteProduct.value?.name}的所有产品信息将被清空, 且无法恢复` : '',
     );
 
     const formDialogVisible = ref(false);
@@ -129,13 +136,14 @@ export default defineComponent({
       onCurrentChange(current: number) {
         pagination.value.current = current;
       },
-      handleDeleteItem(product) {
+      handleDeleteItem(product: CardProductType) {
         confirmVisible.value = true;
         deleteProduct.value = product;
       },
       onConfirmDelete() {
+        if (deleteProduct.value === undefined) return;
         const { index } = deleteProduct.value;
-        data.value.splice(index - 1, 1);
+        data.value?.splice(index - 1, 1);
         confirmVisible.value = false;
         MessagePlugin.success('删除成功');
       },
@@ -143,7 +151,7 @@ export default defineComponent({
         deleteProduct.value = undefined;
         formData.value = { ...INITIAL_DATA };
       },
-      handleManageProduct(product) {
+      handleManageProduct(product: CardProductType) {
         formDialogVisible.value = true;
         formData.value = { ...product, status: product?.isSetup ? '1' : '0' };
       },

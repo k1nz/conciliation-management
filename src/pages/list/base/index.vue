@@ -5,9 +5,19 @@
         <div class="left-operation-container">
           <t-button @click="handleSetupContract"> 新建合同 </t-button>
           <t-button variant="base" theme="default" :disabled="!selectedRowKeys.length"> 导出合同 </t-button>
+          <t-button variant="base" theme="default" @click="handleGetUser"> 查询用户 </t-button>
+          <t-button variant="base" theme="default" @click="handleCreateUser"> 新建用户 </t-button>
+          <t-button variant="base" theme="default"> 导出合同 </t-button>
+          <t-button variant="base" theme="default"> 导出合同 </t-button>
           <p v-if="!!selectedRowKeys.length" class="selected-count">已选{{ selectedRowKeys.length }}项</p>
         </div>
-        <t-input v-model="searchValue" class="search-input" placeholder="请输入你需要搜索的内容" clearable>
+        <t-input
+          v-model="searchValue"
+          class="search-input"
+          placeholder="请输入你需要搜索的内容"
+          clearable
+          @enter="run()"
+        >
           <template #suffix-icon>
             <search-icon size="20px" />
           </template>
@@ -15,7 +25,7 @@
       </t-row>
 
       <t-table
-        :data="data"
+        :data="list"
         :columns="COLUMNS"
         :row-key="rowKey"
         vertical-align="top"
@@ -77,6 +87,7 @@ import Card from '@/components/card/index.vue';
 import { ResDataType } from '@/interface';
 
 import { COLUMNS } from './constants';
+import { getUser } from '@/api/system';
 
 export default defineComponent({
   name: 'ListBaseCard',
@@ -94,27 +105,37 @@ export default defineComponent({
 
     const searchValue = ref('');
 
-    const { data, loading } = useRequest<ResDataType, any, any[]>(
-      'https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-list',
-      {
-        initialData: [],
-        formatResult: (res) => {
-          if (res.code === 0) return res.data.list;
-          return [];
-        },
-        onSuccess: (res) => {
-          pagination.value = {
-            ...pagination.value,
-            total: res.length,
-          };
-        },
+    const {
+      data: list,
+      loading,
+      run,
+    } = useRequest<ResDataType, any, any[]>('https://service-bv448zsw-1257786608.gz.apigw.tencentcs.com/api/get-list', {
+      initialData: [],
+      formatResult: (res) => {
+        if (res.code === 0) return res.data.list;
+        return [];
       },
-    );
+      onSuccess: (res) => {
+        pagination.value = {
+          ...pagination.value,
+          total: res.length,
+        };
+      },
+    });
+
+    const handleGetUser = async () => {
+      const res = await getUser({});
+      console.log(res);
+    };
+
+    // const { data: userList } = useRequest(getUser, {
+
+    // });
 
     const deleteIdx = ref(-1);
     const confirmBody = computed(() => {
       if (deleteIdx.value > -1) {
-        const { name } = data.value[deleteIdx.value];
+        const { name } = list.value[deleteIdx.value];
         return `删除后，${name}的所有合同信息将被清空，且无法恢复`;
       }
       return '';
@@ -132,8 +153,8 @@ export default defineComponent({
 
     const onConfirmDelete = () => {
       // 真实业务请发起请求
-      data.value.splice(deleteIdx.value, 1);
-      pagination.value.total = data.value.length;
+      list.value.splice(deleteIdx.value, 1);
+      pagination.value.total = list.value.length;
       const selectedIdx = selectedRowKeys.value.indexOf(deleteIdx.value);
       if (selectedIdx > -1) {
         selectedRowKeys.value.splice(selectedIdx, 1);
@@ -148,11 +169,13 @@ export default defineComponent({
     };
 
     return {
+      run,
+      handleGetUser,
       CONTRACT_STATUS,
       CONTRACT_TYPES,
       CONTRACT_PAYMENT_TYPES,
       COLUMNS,
-      data,
+      list,
       searchValue,
       loading,
       pagination,

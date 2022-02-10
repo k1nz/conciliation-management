@@ -14,7 +14,7 @@ export interface IDefaultStyle {
 }
 
 const defaultStyle: IDefaultStyle = {
-  showFooter: true,
+  showFooter: false,
   isSidebarCompact: false,
   showBreadcrumb: false,
   mode: 'light',

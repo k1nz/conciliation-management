@@ -9,8 +9,8 @@ function filterPermissionsRouters(routes: RouteRecordRaw[], roles: string[]): Ro
   routes.forEach((route) => {
     const children: RouteRecordRaw[] = [];
     route.children?.forEach((childRouter) => {
-      const roleCode: string = (childRouter.meta?.roleCode as string) || (childRouter.name as string);
-      if (roleCode && roles.indexOf(roleCode) !== -1) {
+      const permsCode: string = (childRouter.meta?.permsCode as string) || (childRouter.name as string);
+      if (permsCode && roles.indexOf(permsCode) !== -1) {
         children.push(childRouter);
       }
     });
