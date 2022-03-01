@@ -33,16 +33,22 @@
     "no-shadow": "off",
     "guard-for-in": "off",
     "no-unused-vars": "off",
+    "no-redeclare": "off",
+    "no-use-before-define": ["error", { "variables": false }],
 
+    "import/first": "off",
     "import/extensions": "off",
     "import/no-unresolved": "off",
     "import/no-extraneous-dependencies": "off",
     "import/prefer-default-export": "off",
 
-    "@typescript-eslint/no-unused-vars": ["error"],
+    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }],
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-redeclare": ["error"],
+    "vue/no-setup-props-destructure": "off",
+    "vue/no-mutating-props": "off",
     "vue/first-attribute-linebreak": 0
   },
   "overrides": [
