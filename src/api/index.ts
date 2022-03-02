@@ -1,5 +1,6 @@
 import Request from './request';
 import proxy from '../config/proxy';
+import { removeNullProperty } from '@/utils/common';
 
 const env = import.meta.env.MODE || 'development';
 
@@ -13,12 +14,29 @@ if (env === 'mock') {
   throw new Error(`未找到${env}模式`);
 }
 
+export function getBaseURL() {
+  return host;
+}
+
 const requestInstance = new Request({
   baseURL: host,
   timeout: 5000,
   withCredentials: true,
+  interceptors: {
+    requestSuccessInterceptor: ({ params, data, ...config }) => {
+      const requestData = config.method === 'get' ? params : data;
+      // debugger;
+      removeNullProperty(requestData);
+      if (config.method === 'get') {
+        return { ...config, params: requestData };
+      }
+      return { ...config, data: requestData };
+    },
+  },
 });
 
 export default requestInstance;
 export * from './system';
 export * from './user';
+export * from './business';
+export * from './mediation';

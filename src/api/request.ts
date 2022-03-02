@@ -59,6 +59,7 @@ class Request {
         const token = localStorage.getItem(TOKEN_NAME);
         config.headers = config.headers ?? {};
         if (token) config.headers['X-Auth-Token'] = token;
+        // console.log(config);
         return config;
       },
       (err) => {
@@ -122,11 +123,14 @@ class Request {
     );
   }
 
-  public get<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+  public get<ResponseType>({
+    data,
+    ...config
+  }: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
     return this.instance.request<any, IDataType<ResponseType>, any>({
       ...config,
       method: 'GET',
-      params: config.data,
+      params: data,
     });
   }
 
@@ -134,8 +138,16 @@ class Request {
     return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'POST' });
   }
 
-  public delete<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
-    return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'DELETE' });
+  public delete<ResponseType>({
+    data,
+    url,
+    ...config
+  }: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+    return this.instance.request<any, IDataType<ResponseType>, any>({
+      ...config,
+      url: `${url}?${new URLSearchParams(data).toString()}`,
+      method: 'DELETE',
+    });
   }
 
   public patch<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
