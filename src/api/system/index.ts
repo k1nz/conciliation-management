@@ -9,6 +9,13 @@ enum SYS_PREFIX {
   dict = '/dict',
   systemParam = '/sysparam',
 }
+// 字典
+export const getDict = (data?: SYS.IReqGetDict) => {
+  return requestInstance.get<SYS.IDictEntry>({
+    url: `${SYS_PREFIX.dict}`,
+    data,
+  });
+};
 // 日志
 export const getLog = (data?: SYS.IReqGetLog) => {
   return requestInstance.get<SYS.IResGetLog>({

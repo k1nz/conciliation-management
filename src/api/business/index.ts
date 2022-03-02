@@ -7,11 +7,18 @@ enum SYS_PREFIX {
   mediator = '/mediator',
   pdf = '/pdf',
   report = '/report',
+  media = '/media',
 }
 // 调解受理表
 export const getCase = (data: BIZ.IReqGetCase) => {
   return requestInstance.get<BIZ.IMedCase>({
     url: `${SYS_PREFIX.case}`,
+    data,
+  });
+};
+export const getBriefCase = (data: Omit<BIZ.IReqGetCase, 'closeDate'>) => {
+  return requestInstance.get<BIZ.IMedCase>({
+    url: `${SYS_PREFIX.case}/brief`,
     data,
   });
 };
@@ -28,14 +35,46 @@ export const updateCase = (data: BIZ.IReqUpdateCase) => {
   });
 };
 export const deleteCase = (data: BIZ.IReqDeleteCase) => {
-  return requestInstance.delete<BIZ.IMedCase>({
-    url: `${SYS_PREFIX.case}/brief`,
+  return requestInstance.delete<null>({
+    url: `${SYS_PREFIX.case}`,
     data,
   });
 };
-export const updateCaseArchive = (data: { acceptDate: string; caseId: string }) => {
-  return requestInstance.get<BIZ.IMedCaseBrief>({
+export const caseArchive = (data: BIZ.IReqArchive) => {
+  return requestInstance.get<BIZ.IMedCase>({
     url: `${SYS_PREFIX.case}/archive`,
+    data,
+  });
+};
+// 当事人
+export const getParty = (data: BIZ.IReqGetParty) => {
+  return requestInstance.get<BIZ.IParty>({
+    url: `${SYS_PREFIX.party}`,
+    data,
+  });
+};
+export const createParty = (data: BIZ.IReqCreateParty[]) => {
+  return requestInstance.post<BIZ.IParty>({
+    url: `${SYS_PREFIX.party}`,
+    data,
+  });
+};
+export const updateParty = (data: Partial<BIZ.IParty>[]) => {
+  return requestInstance.put<BIZ.IParty>({
+    url: `${SYS_PREFIX.party}`,
+    data,
+  });
+};
+export const deleteParty = (data: BIZ.IReqDeleteParty) => {
+  return requestInstance.delete<null>({
+    url: `${SYS_PREFIX.party}`,
+    data,
+  });
+};
+// 媒体
+export const upload = (data: FormData) => {
+  return requestInstance.post<BIZ.IResUpload>({
+    url: `${SYS_PREFIX.media}/content`,
     data,
   });
 };
