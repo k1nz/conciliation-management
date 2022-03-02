@@ -3,3 +3,6 @@ declare module '*.vue' {
 
   export default Vue;
 }
+
+declare module 'nprogress';
+declare module 'vue3-clipboard';
