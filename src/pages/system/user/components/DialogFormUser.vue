@@ -1,6 +1,6 @@
 <template>
   <t-dialog
-    v-model:visible="visible"
+    v-model:visible="props.visible"
     placement="center"
     :header="`${mode === 'new' ? '新增' : defaultUserName + '的'}用户信息`"
     width="40%"
@@ -14,7 +14,7 @@
   >
     <t-form
       ref="form"
-      :data="data"
+      :data="props.data"
       label-align="left"
       layout="vertical"
       :colon="true"
@@ -22,17 +22,17 @@
       label-width="120px"
     >
       <t-form-item label="用户账号" name="userName">
-        <t-input v-model="data.userName"></t-input>
+        <t-input v-model="props.data.userName"></t-input>
       </t-form-item>
       <t-form-item v-if="mode === 'new'" label="默认密码" name="initPwd">
-        <t-input v-model="data.initPwd" type="password"></t-input>
+        <t-input v-model="props.data.initPwd" type="password"></t-input>
       </t-form-item>
       <t-form-item label="用户姓名" name="personName">
-        <t-input v-model="data.personName"></t-input>
+        <t-input v-model="props.data.personName"></t-input>
       </t-form-item>
       <t-form-item label="所属分组" name="grpId">
         <t-cascader
-          v-model="data.grpId"
+          v-model="props.data.grpId"
           :loading="groupLoading"
           :keys="{ label: 'grpName', value: 'grpId', children: 'children' }"
           :options="groupData"
@@ -43,7 +43,7 @@
       </t-form-item>
       <t-form-item label="分组数据授权" name="dataGrps">
         <t-tree-select
-          v-model="data.dataGrps"
+          v-model="props.data.dataGrps"
           :loading="groupLoading"
           :data="groupData"
           :tree-props="{ keys: { label: 'grpName', value: 'grpId', children: 'children' } }"
@@ -65,7 +65,7 @@
         </t-select>
       </t-form-item>
       <t-form-item label="备注" name="description">
-        <t-input v-model="data.description"></t-input>
+        <t-input v-model="props.data.description"></t-input>
       </t-form-item>
     </t-form>
   </t-dialog>
@@ -114,27 +114,29 @@ const systemStore = useSystemStore();
 
 const form = ref<{ validate: (params?: FormValidateParams) => FormValidateResult<typeof INITIAL_DATA> } | null>(null);
 
-const {
-  data = {},
-  visible = false,
-  updateUserList,
-} = defineProps<{
-  data: USER.IUserType & { initPwd?: string };
-  visible: boolean;
-  updateUserList: () => Promise<any>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    data: USER.IUserType & { initPwd?: string };
+    visible: boolean;
+    updateUserList: () => Promise<any>;
+  }>(),
+  {
+    data: () => ({}),
+    visible: false,
+  },
+);
 const defaultUserName = ref('');
 watch(
-  () => visible,
+  () => props.visible,
   (newVal) => {
     if (newVal) {
-      defaultUserName.value = data.personName ?? '';
+      defaultUserName.value = props.data.personName ?? '';
     }
   },
 );
 
 const mode = computed(() => {
-  if (data?.userId) {
+  if (props.data?.userId) {
     return 'edit';
   }
   return 'new';
@@ -143,7 +145,7 @@ const mode = computed(() => {
 const selectedRoles = ref<{ roleId: string }[]>([]);
 const selectedRolesFilter = computed({
   get() {
-    return data.roles?.map((role) => role.roleId);
+    return props.data.roles?.map((role) => role.roleId);
   },
   // perf: set in submit stage
   set(newRoles: string[] | undefined) {
@@ -165,6 +167,7 @@ const {
   formatResult: (data) => {
     const { data: group } = data;
     if (group) return systemStore.getGroupTree(group);
+    return [];
   },
 });
 
@@ -191,7 +194,7 @@ const close = () => {
 const handleSubmitSuccess = () => {
   MessagePlugin.success(`${mode.value === 'new' ? '创建' : '修改'}用户成功`);
   close();
-  updateUserList?.();
+  props.updateUserList?.();
   resetData();
 };
 const { loading: userCreating, run: runCreateUser } = useRequest(API.createUser, {
@@ -208,7 +211,7 @@ const submitLoading = computed(() => userUpdating.value || userCreating.value);
 const onClickConfirm = async () => {
   const validateResult = await form.value!.validate();
   if (validateResult === true) {
-    submitData.value = { ...submitData.value, ...data, roles: selectedRoles };
+    submitData.value = { ...submitData.value, ...props.data, roles: selectedRoles };
     try {
       if (mode.value === 'new') {
         await runCreateUser(submitData.value as SYS.IReqCreateUser);
@@ -218,8 +221,10 @@ const onClickConfirm = async () => {
           delete submitData.value.initPwd;
           await runUpdateUser(submitData.value);
         }
-      } else return;
-    } catch (e) {}
+      }
+    } catch (e) {
+      console.log(e);
+    }
   } else {
     console.log('error submit', validateResult);
   }

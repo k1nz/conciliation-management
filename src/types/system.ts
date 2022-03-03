@@ -1,5 +1,16 @@
+import { DICT_TYPES } from '@/constants';
 import * as USER from '@/types/user';
-import { IReqCondition } from './request';
+import { WithCondition } from './request';
+
+export interface IDictEntry {
+  id: string;
+  parentId?: string;
+  category: DICT_TYPES;
+  code?: string;
+  value: string;
+  orderNum?: number;
+  extraData?: string;
+}
 
 export interface IFlatGroup {
   grpId: string;
@@ -19,6 +30,18 @@ export type ITreeGroupObject = IFlatGroup & {
 export type ITreeGroup = ITreeGroupObject[];
 
 // API
+// /dict
+export type IReqGetDict = WithCondition<{
+  id?: string;
+  parentId?: string;
+  category?: number;
+  code?: string;
+  value?: string;
+  extraData?: string;
+  parentCode?: string;
+  parentValue?: string;
+}>;
+
 // /log
 export interface IReqGetLog {
   logId?: string;
@@ -63,7 +86,7 @@ export interface IReqDeleteRole {
 }
 
 // /user
-export interface IReqGetUser extends IReqCondition {
+export type IReqGetUser = WithCondition<{
   userId?: string;
   userName?: string;
   grpId?: string;
@@ -72,7 +95,7 @@ export interface IReqGetUser extends IReqCondition {
   personName?: string;
   createTime?: string;
   createUser?: string;
-}
+}>;
 export type IResGetUser = USER.IUserType;
 
 export interface IReqCreateUser extends Omit<USER.IUserType, 'roles'> {

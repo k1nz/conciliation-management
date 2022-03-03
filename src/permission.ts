@@ -2,6 +2,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import NProgress from 'nprogress'; // progress bar
 import 'nprogress/nprogress.css'; // progress bar style
 
+import { storeToRefs } from 'pinia';
 import router from '@/router';
 import { useUserStore } from '@/store/modules/user';
 import { usePermStore } from '@/store/modules/permission';
@@ -11,10 +12,9 @@ NProgress.configure({ showSpinner: false });
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
   const permStore = usePermStore();
+  const { token } = storeToRefs(userStore);
   const { whiteListRouters } = permStore;
   NProgress.start();
-
-  const { token } = userStore;
 
   if (token) {
     if (to.path === '/login') {

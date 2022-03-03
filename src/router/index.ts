@@ -1,10 +1,10 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
 import baseRouters from './modules/base';
-import componentsRouters from './modules/components';
+// import componentsRouters from './modules/components';
 
 // 存放动态路由
-export const asyncRouterList: Array<RouteRecordRaw> = [...baseRouters, ...componentsRouters];
+export const asyncRouterList: Array<RouteRecordRaw> = [...baseRouters];
 
 // 存放固定的路由
 const defaultRouterList: Array<RouteRecordRaw> = [
@@ -15,7 +15,7 @@ const defaultRouterList: Array<RouteRecordRaw> = [
   },
   {
     path: '/',
-    redirect: '/home/dashboard',
+    redirect: '/home',
     component: () => import('@/layouts/blank.vue'),
   },
 ];

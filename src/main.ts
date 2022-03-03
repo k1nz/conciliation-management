@@ -9,6 +9,7 @@ import '@/style/index.less';
 import './permission';
 
 import App from './App.vue';
+import { useSystemStore } from './store';
 
 const app = createApp(App);
 
@@ -18,3 +19,6 @@ app.use(router);
 app.use(VueClipboard);
 
 app.mount('#app');
+
+const systemStore = useSystemStore();
+systemStore.initSystem();

@@ -25,3 +25,20 @@ export interface IReqCondition {
   __sortBy?: string;
   __fields?: string;
 }
+
+type GetConditionSuffixType =
+  | '$in'
+  | '$null'
+  | '$notnull'
+  | '$gt'
+  | '$ge'
+  | '$lt'
+  | '$le'
+  | '$under'
+  | '$start'
+  | '$like'
+  | '$end';
+export type WithCondition<T extends Record<string, any>> = IReqCondition &
+  Partial<T> & {
+    [P in keyof T as `${string & P}${GetConditionSuffixType}`]?: string;
+  };

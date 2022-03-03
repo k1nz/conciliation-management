@@ -2,7 +2,7 @@
   <div :class="layoutCls">
     <t-head-menu :class="menuCls" :theme="theme" expand-type="popup" :value="active">
       <template #logo>
-        <span v-if="showLogo" class="header-logo-container" @click="handleNav('/home/dashboard')">
+        <span v-if="showLogo" class="header-logo-container" @click="handleNav('/home')">
           <span class="project-name">人民调解案件管理系统</span>
           <!-- <tLogoFull class="t-logo" /> -->
         </span>
@@ -20,7 +20,7 @@
           <search v-if="layout !== 'side'" :layout="layout" />
 
           <!-- 全局通知 -->
-          <notice />
+          <!-- <notice /> -->
 
           <!-- <t-tooltip placement="bottom" content="代码仓库">
             <t-button theme="default" shape="square" variant="text" @click="navToGitHub">
@@ -74,14 +74,14 @@ import { useUserStore } from '@/store/modules/user';
 import { prefix } from '@/config/global';
 import { MenuRoute } from '@/interface';
 
-import Notice from './Notice.vue';
+// import Notice from './Notice.vue';
 import Search from './Search.vue';
 import MenuContent from './MenuContent';
 import PasswordChange from '@/components/password-change/index.vue';
 
 export default defineComponent({
   components: {
-    Notice,
+    // Notice,
     Search,
     MenuContent,
     PasswordChange,

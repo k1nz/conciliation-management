@@ -43,4 +43,13 @@ export interface IReqGetMediator {
 }
 export type IResGetMediator = IMediatorType;
 
+// mediation office
+export interface IReqGetMedOffice {
+  officeId?: string;
+  officeName?: string;
+  grpId?: string;
+  city?: string;
+  district?: string;
+  street?: string;
+}
 // API END

@@ -3,23 +3,18 @@
     <card title="用户管理" class="list-card-container">
       <t-row justify="space-between">
         <div class="left-operation-container">
-          <t-button v-if="hasPermission(['create:user'])" @click="handleCreateUser"> 新增用户 </t-button>
-          <t-button variant="base" theme="default" @click="handleExport"> 导出 </t-button>
-          <!-- <p v-if="!!selectedRowKeys.length" class="selected-count">已选{{ selectedRowKeys.length }}项</p> -->
+          <t-button :disabled="!hasPermission(['create:user'])" @click="handleCreateUser"> 新增用户 </t-button>
         </div>
         <div style="display: flex; flex-direction: row; gap: 20px">
           <t-input
-            v-model="searchValue"
+            v-model="queryParams.userName$like"
             class="search-input"
             placeholder="请输入你需要搜索的内容"
             clearable
-            @enter="handleSearch"
+            @enter="refresh"
           >
-            <!-- <template #suffix-icon>
-              <search-icon size="20px" />
-            </template> -->
           </t-input>
-          <t-button @click="handleSearch"><search-icon size="20px" />搜索</t-button>
+          <t-button @click="refresh"><search-icon size="20px" />搜索</t-button>
         </div>
       </t-row>
 
@@ -41,15 +36,14 @@
           <t-tag v-else theme="success" variant="light"> 正常 </t-tag>
         </template>
 
-        <template #op="{ row }">
+        <template #op="{ row, rowIndex }">
           <t-tooltip content="详情" style="margin: 0 30px 0px 0">
             <t-icon name="bulletpoint" size="xs" style="cursor: pointer" @click="handleClickDetail(row)" />
           </t-tooltip>
           <t-tooltip theme="danger" content="删除" style="margin: 0 30px 0px 0">
-            <t-icon name="delete" size="xs" style="cursor: pointer" @click="handleClickDelete(row)" />
+            <t-icon name="delete" size="xs" style="cursor: pointer" @click="handleClickDelete(rowIndex)" />
           </t-tooltip>
           <t-tooltip theme="primary" content="更多" style="margin: 0 0px 0px 0">
-            <!-- <t-icon name="more" size="xs" style="cursor: pointer" /> -->
             <t-dropdown :options="dropDownOptions" @click="handleDropdown">
               <t-button variant="text">
                 <t-icon name="more" size="xs" style="cursor: pointer" />
@@ -76,13 +70,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, Ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { defineComponent, ref, computed } from 'vue';
 import { SearchIcon } from 'tdesign-icons-vue-next';
 import { DropdownOption, MessagePlugin, TableChangeData } from 'tdesign-vue-next';
 
 import { useRequest } from 'vue-request';
-import { CONTRACT_STATUS, CONTRACT_TYPES, CONTRACT_PAYMENT_TYPES } from '@/constants';
 import Card from '@/components/card/index.vue';
 import DialogForm from './components/DialogFormUser.vue';
 
@@ -93,9 +85,8 @@ import type * as SYS from '@/types/system';
 import type * as USER from '@/types/user';
 
 const DEFAULT_PAGINATION = {
-  defaultPageSize: 20,
-  total: 0,
-  defaultCurrent: 1,
+  pageSize: 20,
+  current: 1,
 };
 
 type PickedData = 'userName' | 'grpId' | 'personName' | 'description' | 'roles' | 'dataGrps';
@@ -128,14 +119,12 @@ export default defineComponent({
   },
   setup() {
     const hasPermission = usePermissionCheck();
-    const router = useRouter();
     // data init
-    const pagination: Ref<typeof DEFAULT_PAGINATION> = ref(DEFAULT_PAGINATION);
-    const searchValue: Ref<string> = ref('');
-    const selectedData: Ref<USER.IUserType> = ref(INITIAL_DATA);
-    const queryParams: Ref<SYS.IReqGetUser> = ref({
-      __limit: DEFAULT_PAGINATION.defaultPageSize,
-      __page: DEFAULT_PAGINATION.defaultCurrent,
+    const pagination = ref<typeof DEFAULT_PAGINATION & { total?: number }>(DEFAULT_PAGINATION);
+    const selectedData = ref<USER.IUserType>(INITIAL_DATA);
+    const queryParams = ref<SYS.IReqGetUser>({
+      __limit: DEFAULT_PAGINATION.pageSize,
+      __page: DEFAULT_PAGINATION.current,
       __sortBy: 'createTime$desc',
     });
 
@@ -144,21 +133,32 @@ export default defineComponent({
       data: list,
       loading,
       refresh,
-    } = useRequest(API.getUser, {
-      manual: true,
-      defaultParams: [queryParams.value],
+    } = useRequest(() => API.getUser(queryParams.value), {
+      refreshDeps: [queryParams],
+      debounceInterval: 1000,
       onSuccess: (res) => {
-        if (res.count ?? false) {
-          pagination.value = {
-            ...pagination.value,
-            total: res.count as number,
-          };
+        if (res.count !== undefined) {
+          pagination.value.total = res.count!;
         }
       },
     });
     const data = computed(() => {
       return list?.value?.data;
     });
+
+    const rehandleChange = (changeParams: TableChangeData) => {
+      const { pageSize, current } = changeParams.pagination!;
+      pagination.value = {
+        ...pagination.value,
+        pageSize: pageSize as number,
+        current: current || 1,
+      };
+      queryParams.value = {
+        ...queryParams.value,
+        __limit: pageSize as number,
+        __page: current || 1,
+      };
+    };
 
     const visible = ref(false);
     const handleCreateUser = () => {
@@ -168,12 +168,6 @@ export default defineComponent({
     // export
     const handleExport = () => {
       console.log('todo');
-    };
-
-    // search
-    const handleSearch = (searchValue: string) => {
-      if (searchValue) queryParams.value.userName = searchValue;
-      refresh();
     };
 
     // user detail
@@ -192,21 +186,27 @@ export default defineComponent({
       }
       return '';
     });
-    const handleClickDelete = (row: { rowIndex: any }) => {
-      deleteIdx.value = row.rowIndex;
+    const handleClickDelete = (rowIndex: number) => {
+      deleteIdx.value = rowIndex;
       confirmVisible.value = true;
     };
-    const { loading: userDeleting, run: deleteUser } = useRequest(API.deleteUser, { manual: true });
     const resetIdx = () => {
       deleteIdx.value = -1;
     };
-    const onConfirmDelete = () => {
-      deleteUser({ userId: data.value![deleteIdx.value].userId! });
+    const deleteCallback = () => {
       refresh();
       confirmVisible.value = false;
       MessagePlugin.success('删除成功');
       resetIdx();
     };
+    const { loading: userDeleting, run: deleteUser } = useRequest(API.deleteUser, {
+      manual: true,
+      onSuccess: deleteCallback,
+    });
+    const onConfirmDelete = () => {
+      deleteUser({ userId: data.value![deleteIdx.value].userId! });
+    };
+
     const onCancel = () => {
       resetIdx();
     };
@@ -220,27 +220,19 @@ export default defineComponent({
       }
     };
 
-    onMounted(() => {
-      refresh();
-    });
-
     return {
       data,
       list,
       refresh,
       hasPermission,
       visible,
+      queryParams,
       selectedData,
       handleCreateUser,
       handleExport,
-      handleSearch,
       dropDownOptions,
       handleDropdown,
-      CONTRACT_STATUS,
-      CONTRACT_TYPES,
-      CONTRACT_PAYMENT_TYPES,
       COLUMNS,
-      searchValue,
       loading,
       pagination,
       confirmBody,
@@ -251,21 +243,9 @@ export default defineComponent({
       onConfirmDelete,
       userDeleting,
       onCancel,
-      rehandleChange(changeParams: TableChangeData) {
-        const { pagination } = changeParams;
-        queryParams.value = {
-          ...queryParams.value,
-          __limit: pagination?.pageSize,
-          __page: pagination?.current,
-        };
-        refresh();
-      },
-      handleSetupContract() {
-        router.push('/form/base');
-      },
+      rehandleChange,
     };
   },
-  methods: {},
 });
 </script>
 <style lang="less" scoped>

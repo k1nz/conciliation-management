@@ -85,7 +85,7 @@ export default defineComponent({
     };
 
     const goHome = () => {
-      router.push('/home/dashboard');
+      router.push('/home');
     };
 
     const useComputed = (props: PropsType) => {

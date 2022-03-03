@@ -5,6 +5,7 @@ import * as USER_API from '@/api/user';
 import { TOKEN_NAME } from '@/config/global';
 import { ILoginInfoType, IUserType } from '@/types/user';
 import router from '@/router';
+import useSystemStore from './system';
 
 const InitUserInfo: IUserType | Record<string, unknown> = {
   // roles: [],
@@ -43,10 +44,13 @@ export const useUserStore = defineStore('user', {
       this.setToken(loginResp.data?.[0].authToken);
       localStorage.setItem('userInfo', JSON.stringify(loginResp.data?.[0].user)); // 存储用户信息至storage, 由路由守卫将用户信息存入store中
       const redirect = router.currentRoute.value.query?.redirect;
+      // initialize
+      const systemStore = useSystemStore();
+      await systemStore.initSystem();
       if (typeof redirect === 'string') {
         router.push(redirect);
       } else {
-        router.push('/home/dashboard');
+        router.push('/home');
       }
     },
     async getUserInfo() {
