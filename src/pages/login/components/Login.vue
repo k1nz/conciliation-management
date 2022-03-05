@@ -55,7 +55,7 @@ import { ILoginInfoType } from '@/types/user';
 
 const INITIAL_DATA: ILoginInfoType = {
   userName: 'admin',
-  password: 'admin',
+  password: 'aadmin',
   typ: 'web',
   lang: 'zh',
 };
