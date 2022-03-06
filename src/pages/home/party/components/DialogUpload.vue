@@ -12,7 +12,7 @@
       <t-button :loading="submitLoading" @click="clearFile">删除证件照片</t-button>
       <br />
       <br />
-      <img :src="preview" style="max-width: 100%; max-height: 800px" />
+      <img :src="preview" alt="令牌失效，请重新登录" style="max-width: 100%; max-height: 800px" />
     </div>
     <t-upload
       v-model="uploadState.files"
