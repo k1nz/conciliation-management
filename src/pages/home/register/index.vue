@@ -6,9 +6,7 @@
         <t-button variant="base" theme="default" @click="handleExport"> 导出 </t-button>
       </div>
       <div style="display: flex; flex-direction: row; gap: 20px">
-        <!-- <t-input v-model="data." class="search-input" placeholder="请输入你需要搜索的内容" clearable @enter="refresh">
-        </t-input> -->
-        <popup-form-search v-model:data="queryParams" :default-data="{ ...queryParams }" />
+        <PopupFormSearch v-model:data="queryParams" />
       </div>
     </t-row>
 
@@ -79,13 +77,12 @@
       }"
       @confirm="handleDialogConfirm"
     />
-    <dialog-form-case v-model:data="selectedData" v-model:visible="visible" :update-list="refresh" />
+    <DialogFormCase v-model:data="selectedData" v-model:visible="visible" :update-list="refresh" />
   </card>
 </template>
 <script setup lang="ts">
 import { useRequest } from 'vue-request';
 import { ref, computed, reactive } from 'vue';
-import dayjs from 'dayjs';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { TableChangeData } from 'tdesign-vue-next';
 import { usePermissionCheck } from '@/hooks';
@@ -94,36 +91,18 @@ import Card from '@/components/card/index.vue';
 import PopupFormSearch from './components/PopupFormSearch.vue';
 import DialogFormCase from './components/DialogFormCase.vue';
 
-import { CASE_INITIAL_DATA, COLUMNS } from './constants';
+import { CASE_INITIAL_DATA, COLUMNS, DEFAULT_SEARCH_PARAMS, DEFAULT_PAGINATION } from './constants';
 import * as API from '@/api';
 import type * as BIZ from '@/types/business';
 import { getBaseURL } from '@/api';
 import { TOKEN_NAME } from '@/config/global';
-
-const DEFAULT_PAGINATION = {
-  pageSize: 20,
-  current: 1,
-};
 
 const hasPermission = usePermissionCheck();
 
 // data init
 const pagination = ref<typeof DEFAULT_PAGINATION & { total?: number }>(DEFAULT_PAGINATION);
 const selectedData = ref<BIZ.IReqCreateCase>(CASE_INITIAL_DATA);
-const queryParams = ref<BIZ.IReqGetCase>({
-  acceptDate$ge: dayjs().subtract(1, 'year').format('YYYY-MM-DD'),
-  acceptDate$lt: dayjs().format('YYYY-MM-DD'),
-  docNum: '',
-  medOfficeId: '',
-  // caseKind: 1,
-  // procedureKind: 1,
-  disputeKind: '',
-  acceptor: '',
-  closeDate: '',
-  __limit: DEFAULT_PAGINATION.pageSize,
-  __page: DEFAULT_PAGINATION.current,
-  // __sortBy: 'createTime$desc',
-});
+const queryParams = ref<BIZ.IReqGetCase>(DEFAULT_SEARCH_PARAMS);
 const queryParamsFormat = computed(() => {
   const { acceptDate$ge, acceptDate$lt } = queryParams.value;
   return {

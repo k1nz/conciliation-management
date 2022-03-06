@@ -82,3 +82,25 @@ export const CASE_INITIAL_DATA: IReqCreateCase = {
   executionState: `${dayjs().format('YYYY年MM月DD日')}，双方在，双方当场履行协议约定的内容`,
   receiptContent: '由 XXX 支付现金/自愿退回定金 XX 元给 XXX。（￥XX.00）',
 };
+
+export const AUTO_SIZE_OPTIONS: boolean | { minRows?: number; maxRows?: number } = { minRows: 3 };
+
+export const DEFAULT_PAGINATION = {
+  pageSize: 20,
+  current: 1,
+};
+
+export const DEFAULT_SEARCH_PARAMS = {
+  acceptDate$ge: dayjs().subtract(1, 'year').format('YYYY-MM-DD'),
+  acceptDate$lt: dayjs().format('YYYY-MM-DD'),
+  docNum: '',
+  medOfficeId: '',
+  caseKind: undefined,
+  procedureKind: undefined,
+  disputeKind: '',
+  acceptor: '',
+  closeDate: '',
+  __limit: DEFAULT_PAGINATION.pageSize,
+  __page: DEFAULT_PAGINATION.current,
+  __sortBy: 'acceptDate$desc',
+};

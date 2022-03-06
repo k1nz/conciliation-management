@@ -14,7 +14,12 @@
             @enter="refresh"
           >
           </t-input>
-          <t-button @click="refresh"><search-icon size="20px" />搜索</t-button>
+          <t-button @click="refresh">
+            <template #icon>
+              <search-icon size="20px" />
+            </template>
+            搜索
+          </t-button>
         </div>
       </t-row>
 

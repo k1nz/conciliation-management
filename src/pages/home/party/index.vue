@@ -138,9 +138,8 @@ const queryParamsFormat = computed(() => {
 
 // table
 const expandedRowKeys = ref<string[]>([]);
-const rehandleExpandChange = (value: string[], { expandedRowData }: { expandedRowData: BIZ.IParty[] }) => {
+const rehandleExpandChange = (value: string[]) => {
   expandedRowKeys.value = value;
-  console.log('rehandleExpandChange', value, expandedRowData);
 };
 
 // request

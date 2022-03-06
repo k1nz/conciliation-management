@@ -1,7 +1,12 @@
 <template>
   <div>
     <t-popup theme="default" :visible="visible" overlay-class-name="search-popup">
-      <t-button @click="visibleChange"><icon name="filter" />筛选</t-button>
+      <t-button @click="visibleChange">
+        <template #icon>
+          <t-icon name="filter" />
+        </template>
+        筛选
+      </t-button>
 
       <template #content>
         <t-form
@@ -52,12 +57,6 @@
             />
           </t-form-item>
           <t-form-item label="纠纷类别" name="disputeKind">
-            <!-- <t-select
-              v-model="localData.disputeKind"
-              :options="options.disputeKindOptions"
-              placeholder="纠纷类别"
-              clearable
-            /> -->
             <CmSelector v-model="localData.disputeKind" dict-name="Dispute" />
           </t-form-item>
           <t-form-item label="案号" name="docNum">
@@ -89,15 +88,15 @@ import type * as BIZ from '@/types/business';
 import { PROCEDURE_KIND_OPTIONS, CASE_KIND_OPTIONS } from '@/constants';
 import CmSelector from '../../../../components/cm-selector/index.vue';
 
-const props = withDefaults(defineProps<{ data: BIZ.IReqGetCase; defualtData: BIZ.IReqGetCase }>(), {
+const props = withDefaults(defineProps<{ data: BIZ.IReqGetCase }>(), {
   data: () => ({
     acceptDate$ge: dayjs().format('YYYY-MM-DD'),
     acceptDate$lt: dayjs().format('YYYY-MM-DD'),
   }),
-  defualtData: () => ({ acceptDate$ge: dayjs().format('YYYY-MM-DD'), acceptDate$lt: dayjs().format('YYYY-MM-DD') }),
 });
 const emit = defineEmits(['update:data', 'search']);
 // lose reactive
+const defaultData = { ...props.data };
 const localData = ref({ ...props.data });
 
 const FORM_RULES: Partial<Record<keyof BIZ.IReqGetCase, FormRule[]>> = {
@@ -127,14 +126,13 @@ const visible = ref<boolean>(false);
 const visibleChange = () => {
   visible.value = !visible.value;
   if (visible.value) {
-    console.log(props);
     localData.value = { ...props.data };
   }
 };
 
 const reset = () => {
-  localData.value = { ...props.defualtData };
-  emit('update:data', { ...props.data, ...props.defualtData });
+  localData.value = { ...defaultData };
+  emit('update:data', { ...props.data, ...defaultData });
 };
 const handleSearch = () => {
   visibleChange();
