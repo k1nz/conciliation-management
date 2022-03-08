@@ -1,6 +1,6 @@
 <template>
   <t-dialog
-    v-model:visible="props.visible"
+    :visible="props.visible"
     placement="center"
     :header="`${mode === 'new' ? '新增' : defaultCaseName + '的'}案件`"
     width="50%"
