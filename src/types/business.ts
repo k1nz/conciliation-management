@@ -100,7 +100,7 @@ export type IReqGetCase = WithCondition<{
   mediator?: string;
   closeDate?: string;
 }>;
-export interface IReqCreateCase extends Partial<IMedCase> {
+export interface IReqCreateCase extends Partial<Omit<IMedCase, 'parties'>> {
   medOfficeId: string;
   caseKind: CASE_TYPE;
   procedureKind: CASE_PROCEDURE_TYPE;
@@ -108,6 +108,10 @@ export interface IReqCreateCase extends Partial<IMedCase> {
   moneyInvolved: string;
   synopsis: string;
   agreement: string;
+  parties?: {
+    partyId: string;
+    applicationDate: string;
+  }[];
 }
 export type IReqUpdateCase = IReqCreateCase;
 export interface IReqDeleteCase {
