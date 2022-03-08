@@ -25,8 +25,11 @@ const requestInstance = new Request({
   interceptors: {
     requestSuccessInterceptor: ({ params, data, ...config }) => {
       const requestData = config.method === 'get' ? params : data;
+      const { notNullExclude, deleteValue } = config;
       // debugger;
-      removeNullProperty(requestData);
+      if (notNullExclude || deleteValue)
+        removeNullProperty(requestData, deleteValue || ['', null, undefined], notNullExclude || undefined);
+      else removeNullProperty(requestData);
       if (config.method === 'get') {
         return { ...config, params: requestData };
       }

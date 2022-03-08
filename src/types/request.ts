@@ -1,13 +1,17 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 
+interface ICustomConfig extends AxiosRequestConfig {
+  notNullExclude?: string[];
+  deleteValue?: any[];
+}
 export interface IRequestInterceptor<ResponseType = AxiosResponse> {
-  requestSuccessInterceptor?: (config: AxiosRequestConfig) => AxiosRequestConfig;
+  requestSuccessInterceptor?: (config: ICustomConfig) => ICustomConfig;
   requestFailureInterceptor?: (err: any) => any;
   responseSuccessInterceptor?: (response: AxiosResponse<ResponseType>) => AxiosResponse<ResponseType>;
   responseFailureInterceptor?: (err: any) => any;
 }
 
-export interface IRequestConfig<ResponseType = AxiosResponse> extends AxiosRequestConfig {
+export interface IRequestConfig<ResponseType = AxiosResponse> extends ICustomConfig {
   interceptors?: IRequestInterceptor<ResponseType>;
 }
 
