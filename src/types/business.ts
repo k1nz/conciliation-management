@@ -1,5 +1,6 @@
 import { GENDER_TYPE } from '@/constants';
 import { WithCondition } from './request';
+import { GetPartsRequired } from '@/types/utils';
 
 export enum PARTY_TYPE {
   First = 1,
@@ -108,10 +109,7 @@ export interface IReqCreateCase extends Partial<Omit<IMedCase, 'parties'>> {
   moneyInvolved: string;
   synopsis: string;
   agreement: string;
-  parties?: {
-    partyId: string;
-    applicationDate: string;
-  }[];
+  parties?: GetPartsRequired<Partial<IParty>, 'partyId' | 'applicationDate'>[];
 }
 export type IReqUpdateCase = IReqCreateCase;
 export interface IReqDeleteCase {

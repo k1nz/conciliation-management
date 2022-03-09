@@ -15,3 +15,7 @@ export const removeNullProperty = <T extends Record<string, any>>(
   }
   return obj;
 };
+
+export function filterDataByIds<T>(data: Array<T> = [], ids: Array<string | number> = [], byId = 'id'): Array<T> {
+  return data.filter((d: Record<string, any> = {}) => ids.includes(d[byId]));
+}

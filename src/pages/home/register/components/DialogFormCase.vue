@@ -30,22 +30,22 @@
           :colon="true"
           :rules="FORM_RULES"
           label-width="120px"
-          :disabled="localData.archiveDate"
+          :disabled="!!localData.archiveDate"
         >
           <div class="radio-group">
             <t-radio-group v-model:value="localData.caseKind" variant="primary-filled">
-              <t-radio-button v-for="(item, index) in CASE_KIND_OPTIONS" :key="index" :value="item.value">{{
-                item.label
-              }}</t-radio-button>
+              <t-radio-button v-for="(item, index) in CASE_KIND_OPTIONS" :key="index" :value="item.value"
+                >{{ item.label }}
+              </t-radio-button>
             </t-radio-group>
             <t-radio-group
               v-if="localData.caseKind === CASE_TYPE.People"
               v-model:value="localData.procedureKind"
               variant="primary-filled"
             >
-              <t-radio-button v-for="(item, index) in PROCEDURE_KIND_OPTIONS" :key="index" :value="item.value">{{
-                item.label
-              }}</t-radio-button>
+              <t-radio-button v-for="(item, index) in PROCEDURE_KIND_OPTIONS" :key="index" :value="item.value"
+                >{{ item.label }}
+              </t-radio-button>
             </t-radio-group>
           </div>
           <!-- 调解受理 -->
@@ -54,6 +54,16 @@
           </div>
           <div :id="`${path}#step-2`">
             <t-divider align="left"> 当事人 </t-divider>
+            <PartySelector
+              v-if="props.visible"
+              v-model:selected="partySelected"
+              :default-selected-data="localData.parties"
+              :correlate-case="
+                mode === 'edit' ? { caseId: localData.caseId, caseAcceptDate: localData.acceptDate } : undefined
+              "
+              :disabled="!!localData.archiveDate"
+              v-bind="$attrs"
+            />
           </div>
           <div :id="`${path}#step-3`">
             <t-divider align="left"> 收条 </t-divider>
@@ -97,6 +107,7 @@ import { useRequest } from 'vue-request';
 import * as API from '@/api';
 import CmSelector from '@/components/cm-selector/index.vue';
 import FormItemClosingProcedure from './FormItemClosingProcedure.vue';
+import PartySelector from '@/components/party-selector/index.vue';
 
 import { CASE_INITIAL_DATA } from '../constants';
 import { PROCEDURE_KIND_OPTIONS, CASE_KIND_OPTIONS } from '@/constants';
@@ -105,6 +116,7 @@ import { CASE_PROCEDURE_TYPE, CASE_TYPE } from '@/types/business';
 import * as BIZ from '@/types/business';
 import type { GetRequired } from '@/types/utils';
 import FormItemAccept from './FormItemAccept.vue';
+import { GetPartsRequired } from '@/types/utils';
 
 // CONSTANTS
 const AUTO_SIZE_OPTIONS: boolean | { minRows?: number; maxRows?: number } = { minRows: 3 };
@@ -134,6 +146,14 @@ const props = withDefaults(
 );
 const defaultCaseName = ref('');
 const localData = ref<BIZ.IReqCreateCase>({ ...props.data });
+const partySelected = computed<Array<GetPartsRequired<Partial<BIZ.IParty>, 'partyId' | 'applicationDate'>>>({
+  get() {
+    return localData.value.parties || [];
+  },
+  set(newVal) {
+    Reflect.set(localData.value, 'parties', newVal);
+  },
+});
 watch(
   () => props.visible,
   (newVal) => {

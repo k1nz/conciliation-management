@@ -147,7 +147,6 @@ const {
   data: list,
   loading,
   refresh,
-  // run,
 } = useRequest(() => API.getParty(queryParamsFormat.value), {
   refreshDeps: [queryParamsFormat],
   onSuccess: (res) => {
