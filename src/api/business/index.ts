@@ -41,7 +41,7 @@ export const deleteCase = (data: BIZ.IReqDeleteCase) => {
   });
 };
 export const caseArchive = (data: BIZ.IReqArchive) => {
-  return requestInstance.get<BIZ.IMedCase>({
+  return requestInstance.put<BIZ.IMedCase>({
     url: `${SYS_PREFIX.case}/archive`,
     data,
   });

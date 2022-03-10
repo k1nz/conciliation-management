@@ -50,7 +50,7 @@
             name="delete"
             size="xs"
             :style="{ cursor: row.archiveDate ? 'not-allowed' : 'pointer' }"
-            @click="showDialog('delete', rowIndex)"
+            @click="showDialog('delete', rowIndex, row)"
           />
         </t-tooltip>
         <t-tooltip theme="primary" content="打印预览" style="margin: 0 25px 0px 0">
@@ -61,7 +61,7 @@
             name="save"
             size="xs"
             :style="{ cursor: row.archiveDate ? 'not-allowed' : 'pointer' }"
-            @click="showDialog('archive', rowIndex)"
+            @click="showDialog('archive', rowIndex, row)"
           />
         </t-tooltip>
       </template>
@@ -126,7 +126,7 @@ const {
     }
   },
 });
-const data = computed(() => {
+const data = computed<BIZ.IMedCase[]>(() => {
   return list?.value?.data || [];
 });
 
@@ -198,7 +198,8 @@ const confirmBody = computed<string>(() => {
   }
   return '';
 });
-const showDialog = (mode: DialogStateType['mode'], selectedIndex: number) => {
+const showDialog = (mode: DialogStateType['mode'], selectedIndex: number, row: BIZ.IMedCase) => {
+  if (row.archiveDate) return;
   Object.assign(dialogState, { mode, selectedIndex, confirmVisible: true });
 };
 const resetDialogState = () => {
