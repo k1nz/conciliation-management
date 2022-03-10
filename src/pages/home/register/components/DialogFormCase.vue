@@ -3,7 +3,7 @@
     :visible="props.visible"
     placement="center"
     :header="`${mode === 'new' ? '新增' : defaultCaseName + '的'}案件`"
-    width="50%"
+    width="60%"
     :confirm-btn="{
       content: `${submitLoading ? '保存中...' : '提交'}`,
       theme: 'primary',
@@ -84,6 +84,7 @@
           </div>
           <div v-if="componentVisible.normal" :id="`${path}#step-5`">
             <t-divider align="left"> 调解笔录 </t-divider>
+            <MediateRecord :case="localData" :parties="partySelected" />
           </div>
           <div v-if="componentVisible.justicial" :id="`${path}#step-6`">
             <t-divider align="left"> 司法确认 </t-divider>
@@ -116,6 +117,7 @@ import * as BIZ from '@/types/business';
 import type { GetRequired } from '@/types/utils';
 import FormItemAccept from './FormItemAccept.vue';
 import { GetPartsRequired } from '@/types/utils';
+import MediateRecord from '@/components/mediate-record/index.vue';
 
 // CONSTANTS
 const AUTO_SIZE_OPTIONS: boolean | { minRows?: number; maxRows?: number } = { minRows: 3 };
