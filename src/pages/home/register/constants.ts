@@ -43,7 +43,7 @@ export const COLUMNS = [
   },
   {
     title: '移交民警',
-    width: 100,
+    width: 110,
     colKey: 'transferor',
   },
   {

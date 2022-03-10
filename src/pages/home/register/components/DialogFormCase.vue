@@ -62,7 +62,6 @@
                 mode === 'edit' ? { caseId: localData.caseId, caseAcceptDate: localData.acceptDate } : undefined
               "
               :disabled="!!localData.archiveDate"
-              v-bind="$attrs"
             />
           </div>
           <div :id="`${path}#step-3`">

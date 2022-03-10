@@ -5,7 +5,7 @@
         v-for="item in currentSelectRowData"
         :key="item.partyId"
         theme="primary"
-        :closable="!attrs.disabled || props.disabled"
+        :closable="!disabled"
         @close="handleClose(item.partyId)"
       >
         {{ item.name }}
@@ -106,7 +106,6 @@ import type * as BIZ from '@/types/business';
 import type { ICorrelateCase } from './type';
 import { GetPartsRequired } from '@/types/utils';
 
-const attrs = useAttrs();
 const emit = defineEmits(['update:selected']);
 const props = defineProps({
   selected: {
@@ -132,6 +131,10 @@ const handleClose = (partyId: BIZ.IParty['partyId']) => {
   currentSelectRowData.value = currentSelectRowData.value.filter((e) => e.partyId !== partyId);
   emit('update:selected', currentSelectRowData.value);
 };
+const attrs = useAttrs();
+const disabled = computed<boolean>(() => {
+  return !!attrs.disabled || props.disabled;
+});
 
 // table
 // 选择
