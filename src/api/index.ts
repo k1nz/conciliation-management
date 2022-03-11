@@ -14,10 +14,6 @@ if (env === 'mock') {
   throw new Error(`未找到${env}模式`);
 }
 
-export function getBaseURL() {
-  return host;
-}
-
 const requestInstance = new Request({
   baseURL: host,
   timeout: 5000,
@@ -38,6 +34,7 @@ const requestInstance = new Request({
   },
 });
 
+export const getBaseURL = () => host;
 export default requestInstance;
 export * from './system';
 export * from './user';
