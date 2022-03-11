@@ -79,7 +79,7 @@
         </div>
       </template>
     </t-table>
-    <!-- <dialog-upload v-model:visible="uploadVisible" :data="selectedData" :update-list="refresh" /> -->
+    <dialog-upload v-model:visible="uploadVisible" :data="selectedData" :update-list="refresh" />
   </div>
 </template>
 <script lang="ts">
@@ -95,9 +95,9 @@ import { ref, computed, onBeforeMount, useAttrs } from 'vue';
 import dayjs from 'dayjs';
 import { SelectOptions } from 'tdesign-vue-next';
 import type { TableChangeData } from 'tdesign-vue-next';
-// import DialogUpload from '@/pages/home/party/components/DialogUpload.vue';
-
 import _ from 'lodash';
+import DialogUpload from '@/pages/home/party/components/DialogUpload.vue';
+
 import { DEFAULT_PAGINATION, COLUMNS } from './constants';
 import { PARTY_OPTIONS, GENDER_OPTIONS } from '@/constants';
 
