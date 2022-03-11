@@ -1,5 +1,4 @@
 <template>
-  <t-divider align="left"> 调解受理 </t-divider>
   <t-form-item label="案号" name="caseId">
     <t-input v-model="props.data.docNum" placeholder="系统自动生成" readonly></t-input>
   </t-form-item>
@@ -13,7 +12,7 @@
     <cm-selector v-model="props.data.disputeKind" dict-name="Dispute" create-options value-equal-to-lable />
   </t-form-item>
   <t-form-item label="涉案金额" name="moneyInvolved">
-    <t-input v-model="props.data.moneyInvolved" type="number" suffix="元"></t-input>
+    <t-input v-model="props.data.moneyInvolved" :format="moneyFormat" type="number" suffix="元"></t-input>
   </t-form-item>
   <t-form-item label="纠纷简要情况" name="synopsis">
     <t-textarea v-model="props.data.synopsis" placeholder="请输入" name="synopsis" :autosize="AUTO_SIZE_OPTIONS" />
@@ -54,5 +53,16 @@ const props = defineProps({
     required: true,
   },
 });
+
+const moneyFormat = (val: string) => {
+  const splitVal = val.split('.');
+  if (splitVal.length === 1) {
+    return `${splitVal[0]}.00`;
+  }
+  if (splitVal.length >= 2) {
+    return `${splitVal[0]}.${splitVal[1]}`;
+  }
+  return '0.00';
+};
 </script>
 <style lang="less"></style>

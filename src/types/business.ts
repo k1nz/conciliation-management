@@ -73,6 +73,7 @@ export interface IMedCase {
   medAddr: string;
   medDispute: string;
   participants: string;
+  mediator?: string;
   mediatorDuty: string;
   medRecorder: string;
   closeDate: string;

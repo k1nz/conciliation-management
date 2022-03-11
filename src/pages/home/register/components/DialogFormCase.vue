@@ -3,7 +3,7 @@
     :visible="props.visible"
     placement="center"
     :header="`${mode === 'new' ? '新增' : defaultCaseName + '的'}案件`"
-    width="60%"
+    width="65%"
     :confirm-btn="{
       content: `${submitLoading ? '保存中...' : '提交'}`,
       theme: 'primary',
@@ -16,9 +16,9 @@
       <t-anchor container="#anchor-container" class="anchor">
         <t-anchor-item :href="`#${path}#step-1`" title="调解受理" />
         <t-anchor-item :href="`#${path}#step-2`" title="当事人" />
-        <t-anchor-item :href="`#${path}#step-3`" title="收条" />
-        <t-anchor-item v-if="componentVisible.normal" :href="`#${path}#step-4`" title="结案登记" />
-        <t-anchor-item v-if="componentVisible.normal" :href="`#${path}#step-5`" title="调解笔录" />
+        <t-anchor-item v-if="componentVisible.normal" :href="`#${path}#step-3`" title="调解笔录" />
+        <t-anchor-item :href="`#${path}#step-4`" title="收条" />
+        <t-anchor-item v-if="componentVisible.normal" :href="`#${path}#step-5`" title="结案登记" />
         <t-anchor-item v-if="componentVisible.justicial" :href="`#${path}#step-6`" title="司法确认" />
       </t-anchor>
       <div id="anchor-container" class="form">
@@ -48,49 +48,60 @@
               </t-radio-button>
             </t-radio-group>
           </div>
-          <!-- 调解受理 -->
-          <div :id="`${path}#step-1`">
-            <FormItemAccept :data="localData" />
+          <div :id="`${path}#step-1`" class="form-item-container">
+            <Card border title="调解受理">
+              <FormItemAccept :data="localData" />
+            </Card>
           </div>
-          <div :id="`${path}#step-2`">
-            <t-divider align="left"> 当事人 </t-divider>
-            <PartySelector
-              v-if="props.visible"
-              v-model:selected="partySelected"
-              :default-selected-data="localData.parties"
-              :correlate-case="
-                mode === 'edit' ? { caseId: localData.caseId, caseAcceptDate: localData.acceptDate } : undefined
-              "
-              :disabled="!!localData.archiveDate"
-            />
-          </div>
-          <div :id="`${path}#step-3`">
-            <t-divider align="left"> 收条 </t-divider>
-            <t-form-item label="收条内容" name="receiptContent">
-              <t-textarea
-                v-model="localData.receiptContent"
-                placeholder="请输入"
-                name="receiptContent"
-                :autosize="AUTO_SIZE_OPTIONS"
+          <div :id="`${path}#step-2`" class="form-item-container">
+            <Card border title="当事人">
+              <PartySelector
+                v-if="props.visible"
+                v-model:selected="partySelected"
+                :default-selected-data="localData.parties"
+                :correlate-case="
+                  mode === 'edit' ? { caseId: localData.caseId, caseAcceptDate: localData.acceptDate } : undefined
+                "
+                :disabled="!!localData.archiveDate"
               />
-            </t-form-item>
-            <t-form-item label="收条日期" name="receiptDate">
-              <t-date-picker v-model="localData.receiptDate" theme="primary" mode="date" clearable />
-            </t-form-item>
+            </Card>
           </div>
-          <div v-if="componentVisible.normal" :id="`${path}#step-4`">
-            <t-divider align="left"> 结案登记 </t-divider>
-            <FormItemClosingProcedure :data="localData" />
+          <div v-if="componentVisible.normal" :id="`${path}#step-3`" class="form-item-container">
+            <Card border title="调解笔录">
+              <MediateRecord
+                v-if="localData.parties && localData.parties.length"
+                :case="localData"
+                :parties="partySelected"
+              />
+              <div v-else>请先勾选当事人</div>
+            </Card>
           </div>
-          <div v-if="componentVisible.normal" :id="`${path}#step-5`">
-            <t-divider align="left"> 调解笔录 </t-divider>
-            <MediateRecord :case="localData" :parties="partySelected" />
+          <div :id="`${path}#step-4`" class="form-item-container">
+            <Card border title="收条">
+              <t-form-item label="收条内容" name="receiptContent">
+                <t-textarea
+                  v-model="localData.receiptContent"
+                  placeholder="请输入"
+                  name="receiptContent"
+                  :autosize="AUTO_SIZE_OPTIONS"
+                />
+              </t-form-item>
+              <t-form-item label="收条日期" name="receiptDate">
+                <t-date-picker v-model="localData.receiptDate" theme="primary" mode="date" clearable />
+              </t-form-item>
+            </Card>
           </div>
-          <div v-if="componentVisible.justicial" :id="`${path}#step-6`">
-            <t-divider align="left"> 司法确认 </t-divider>
-            <t-form-item label="法院名称" name="court">
-              <cm-selector v-model="localData.court" dict-name="Court" />
-            </t-form-item>
+          <div v-if="componentVisible.normal" :id="`${path}#step-5`" class="form-item-container">
+            <Card border title="结案登记">
+              <FormItemClosingProcedure :data="localData" />
+            </Card>
+          </div>
+          <div v-if="componentVisible.justicial" :id="`${path}#step-6`" class="form-item-container">
+            <Card border title="司法确认">
+              <t-form-item label="法院名称" name="court">
+                <cm-selector v-model="localData.court" dict-name="Court" />
+              </t-form-item>
+            </Card>
           </div>
         </t-form>
       </div>
@@ -108,6 +119,7 @@ import * as API from '@/api';
 import CmSelector from '@/components/cm-selector/index.vue';
 import FormItemClosingProcedure from './FormItemClosingProcedure.vue';
 import PartySelector from '@/components/party-selector/index.vue';
+import Card from '@/components/card/index.vue';
 
 import { CASE_INITIAL_DATA } from '../constants';
 import { PROCEDURE_KIND_OPTIONS, CASE_KIND_OPTIONS } from '@/constants';
@@ -207,6 +219,7 @@ const onClickConfirm = async () => {
     console.log(localData.value);
     // localData.value = { ...localData.value, ...props.data };
     try {
+      if (localData.value.parties) await API.updateParty(localData.value.parties);
       if (mode.value === 'new') {
         await runCreateCase(localData.value);
       } else if (mode.value === 'edit') {
@@ -242,5 +255,8 @@ const onClickConfirm = async () => {
     justify-content: space-between;
     margin-bottom: 20px;
   }
+}
+.form-item-container {
+  padding: 20px;
 }
 </style>
