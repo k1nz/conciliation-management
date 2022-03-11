@@ -66,7 +66,7 @@ const props = defineProps({
   },
   updateList: {
     type: Function as PropType<() => Promise<any>>,
-    defualt: () => {
+    default: () => {
       console.log('no update-list props');
     },
   },
