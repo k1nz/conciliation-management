@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import * as BIZ from '@/types/business';
 import CMSelector from '@/components/cm-selector/index.vue';
 import { useUserStore } from '@/store';
+import { AUTO_SIZE_OPTIONS } from './constants';
 
 const props = defineProps({
   case: {
@@ -89,7 +90,11 @@ const mediator = computed({
         <t-input v-model="props.case.parties[props.currentPartyIdx].name" placeholder="请输入内容"></t-input>
       </t-form-item>
       <t-form-item label="调查笔录" name="note">
-        <t-input v-model="props.case.parties[props.currentPartyIdx].note" placeholder="请输入内容"></t-input>
+        <t-textarea
+          v-model="props.case.parties[props.currentPartyIdx].note"
+          :autosize="AUTO_SIZE_OPTIONS"
+          placeholder="请输入内容"
+        ></t-textarea>
       </t-form-item>
     </template>
     <template v-else>
@@ -115,7 +120,7 @@ const mediator = computed({
         <t-input v-model="partiesName" placeholder="请输入内容" readonly></t-input>
       </t-form-item>
       <t-form-item label="调解笔录" name="medNote">
-        <t-input v-model="props.case.medNote" placeholder="请输入内容"></t-input>
+        <t-textarea v-model="props.case.medNote" :autosize="AUTO_SIZE_OPTIONS" placeholder="请输入内容"></t-textarea>
       </t-form-item>
     </template>
   </t-form>
