@@ -11,12 +11,14 @@ export const login = (data: USER.ILoginInfoType) => {
   return requestInstance.post<USER.IUserInfoType>({
     url: `${USER_PREFIX.login}`,
     data,
+    localTokenCheckDisabled: true,
   });
 };
 
 export const logout = () => {
   return requestInstance.post<undefined>({
     url: `${USER_PREFIX.logout}`,
+    localTokenCheckDisabled: true,
   });
 };
 

@@ -48,9 +48,9 @@ export const useUserStore = defineStore('user', {
       const systemStore = useSystemStore();
       await systemStore.initSystem();
       if (typeof redirect === 'string') {
-        router.push(redirect);
+        await router.push(redirect);
       } else {
-        router.push('/home');
+        await router.push('/home');
       }
     },
     async getUserInfo() {

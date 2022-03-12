@@ -1,7 +1,7 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { TOKEN_NAME } from '@/config/global';
-import { IRequestConfig, IDataType } from '@/types/request';
+import { IRequestInstanceConfig, IRequestConfig, IDataType } from '@/types/request';
 import router from '@/router';
 
 const CODE = {
@@ -35,12 +35,17 @@ const ERR_MESSAGE = [
   { value: -206, message: '所引用的数据不存在或所要删除的记录被其它记录引用' },
 ];
 
+const TOKEN_TIMEOUT_PERIOD = 60 * 1000 * 10;
+
 class Request {
   public instance: AxiosInstance;
 
-  constructor(config: IRequestConfig) {
+  private readonly instanceId: string;
+
+  constructor(config: IRequestInstanceConfig) {
+    const { interceptors, instanceId } = config;
+    this.instanceId = instanceId;
     this.instance = axios.create(config);
-    const { interceptors } = config;
     if (interceptors) {
       // 实例请求拦截器
       this.instance.interceptors.request.use(
@@ -55,10 +60,16 @@ class Request {
     }
     // 全局请求拦截器
     this.instance.interceptors.request.use(
-      (config: AxiosRequestConfig) => {
+      (config: IRequestConfig) => {
+        // eslint-disable-next-line prefer-const
+        let { headers, localTokenCheckDisabled } = config;
+        const lastApiTime = parseInt(localStorage.getItem(`${this.instanceId}-LAST-API-TIME`) || '0', 10);
+        if (localTokenCheckDisabled !== true && Date.now() - lastApiTime > TOKEN_TIMEOUT_PERIOD) {
+          return Promise.reject({ response: { status: 403 } });
+        }
         const token = localStorage.getItem(TOKEN_NAME);
-        config.headers = config.headers ?? {};
-        if (token) config.headers['X-Auth-Token'] = token;
+        if (!headers) headers = {};
+        if (token) headers['X-Auth-Token'] = token;
         // console.log(config);
         return config;
       },
@@ -70,11 +81,11 @@ class Request {
     this.instance.interceptors.response.use(
       (response: AxiosResponse<IDataType<any>, any>) => {
         if (response.status === 200) {
+          this.handleRequestSuccess();
           const { data } = response;
           if (data.errCode === CODE.REQUEST_SUCCESS) {
             return data;
           }
-          // TODO：无效令牌重新登录
           try {
             data.customMsg = ERR_MESSAGE.find((e) => e.value === data.errCode)?.message;
           } catch (err) {
@@ -93,9 +104,7 @@ class Request {
 
         switch (err.response.status) {
           case 403: {
-            MessagePlugin.error('无效令牌，请重新登录');
-            router.push(`/login?redirect=${router.currentRoute.value.fullPath}`);
-            return Promise.reject(err);
+            return Request.tokenTimeout(err);
           }
           default: {
             console.log('NETERROR', err);
@@ -123,10 +132,7 @@ class Request {
     );
   }
 
-  public get<ResponseType>({
-    data,
-    ...config
-  }: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+  public get<ResponseType>({ data, ...config }: IRequestConfig): Promise<IDataType<ResponseType>> {
     return this.instance.request<any, IDataType<ResponseType>, any>({
       ...config,
       method: 'GET',
@@ -134,15 +140,11 @@ class Request {
     });
   }
 
-  public post<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+  public post<ResponseType>(config: IRequestConfig): Promise<IDataType<ResponseType>> {
     return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'POST' });
   }
 
-  public delete<ResponseType>({
-    data,
-    url,
-    ...config
-  }: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+  public delete<ResponseType>({ data, url, ...config }: IRequestConfig): Promise<IDataType<ResponseType>> {
     return this.instance.request<any, IDataType<ResponseType>, any>({
       ...config,
       url: `${url}?${new URLSearchParams(data).toString()}`,
@@ -150,12 +152,22 @@ class Request {
     });
   }
 
-  public patch<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+  public patch<ResponseType>(config: IRequestConfig): Promise<IDataType<ResponseType>> {
     return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'PATCH' });
   }
 
-  public put<ResponseType>(config: IRequestConfig<IDataType<ResponseType>>): Promise<IDataType<ResponseType>> {
+  public put<ResponseType>(config: IRequestConfig): Promise<IDataType<ResponseType>> {
     return this.instance.request<any, IDataType<ResponseType>, any>({ ...config, method: 'PUT' });
+  }
+
+  private static async tokenTimeout(err: any) {
+    await MessagePlugin.error('无效令牌，请重新登录');
+    await router.push(`/login?redirect=${router.currentRoute.value.fullPath}`);
+    return Promise.reject(err);
+  }
+
+  private handleRequestSuccess() {
+    localStorage.setItem(`${this.instanceId}-LAST-API-TIME`, Date.now().toString());
   }
 }
 

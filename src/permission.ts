@@ -2,7 +2,6 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import NProgress from 'nprogress'; // progress bar
 import 'nprogress/nprogress.css'; // progress bar style
 
-import { storeToRefs } from 'pinia';
 import router from '@/router';
 import { useUserStore } from '@/store/modules/user';
 import { usePermStore } from '@/store/modules/permission';
@@ -12,12 +11,11 @@ NProgress.configure({ showSpinner: false });
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
   const permStore = usePermStore();
-  const { token } = storeToRefs(userStore);
   const { whiteListRouters } = permStore;
   NProgress.start();
 
-  if (token) {
-    if (to.path === '/login') {
+  if (userStore.token) {
+    if (to.path === '/login' && from.path !== '/login') {
       setTimeout(() => {
         userStore.logout();
         permStore.restore();
@@ -38,7 +36,7 @@ router.beforeEach(async (to, from, next) => {
         next({ ...to });
       } catch (error) {
         console.error(error);
-        MessagePlugin.error('未知错误');
+        await MessagePlugin.error('未知错误');
         await userStore.removeToken();
         next(`/login?redirect=${to.path}`);
         NProgress.done();

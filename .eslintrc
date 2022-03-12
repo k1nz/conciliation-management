@@ -35,6 +35,7 @@
     "no-unused-vars": "off",
     "no-redeclare": "off",
     "no-use-before-define": ["error", { "variables": false }],
+    "prefer-promise-reject-errors": "off",
 
     "import/first": "off",
     "import/extensions": "off",

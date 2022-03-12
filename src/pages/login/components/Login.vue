@@ -35,7 +35,6 @@
 
       <div class="check-container remember-pwd">
         <t-checkbox>记住账号</t-checkbox>
-        <!-- <span class="tip">忘记账号？</span> -->
       </div>
     </template>
 
@@ -47,7 +46,6 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { MessagePlugin, SubmitContext } from 'tdesign-vue-next';
 import { useCounter } from '@/hooks';
 import { useUserStore } from '@/store/modules/user';
@@ -78,7 +76,6 @@ export default defineComponent({
       type.value = val;
     };
 
-    const router = useRouter();
     const userStore = useUserStore();
     const loading = ref(false);
 
@@ -88,9 +85,6 @@ export default defineComponent({
           loading.value = true;
           await userStore.login(formData.value);
           MessagePlugin.success('登陆成功');
-          router.push({
-            path: '/system/user',
-          });
         } catch (e) {
           console.log(e);
         } finally {

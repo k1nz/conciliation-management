@@ -15,6 +15,7 @@ if (env === 'mock') {
 }
 
 const requestInstance = new Request({
+  instanceId: 'main',
   baseURL: host,
   timeout: 5000,
   withCredentials: true,

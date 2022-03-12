@@ -1,17 +1,19 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-
-interface ICustomConfig extends AxiosRequestConfig {
+// 调用实例方法时传入的类型
+export interface IRequestConfig extends AxiosRequestConfig {
   notNullExclude?: string[];
   deleteValue?: any[];
+  localTokenCheckDisabled?: boolean;
 }
 export interface IRequestInterceptor<ResponseType = AxiosResponse> {
-  requestSuccessInterceptor?: (config: ICustomConfig) => ICustomConfig;
+  requestSuccessInterceptor?: (config: IRequestConfig) => IRequestConfig;
   requestFailureInterceptor?: (err: any) => any;
   responseSuccessInterceptor?: (response: AxiosResponse<ResponseType>) => AxiosResponse<ResponseType>;
   responseFailureInterceptor?: (err: any) => any;
 }
-
-export interface IRequestConfig<ResponseType = AxiosResponse> extends ICustomConfig {
+// 创建实例构造函数参数类型
+export interface IRequestInstanceConfig<ResponseType = AxiosResponse> extends AxiosRequestConfig {
+  instanceId: string;
   interceptors?: IRequestInterceptor<ResponseType>;
 }
 
