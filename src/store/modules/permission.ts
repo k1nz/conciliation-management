@@ -36,7 +36,7 @@ export const usePermStore = defineStore('permission', {
     setRouters(routers: RouteRecordRaw[]) {
       this.routers = routers as MenuRoute[];
     },
-    async initRoutes(roles: string[]) {
+    initRoutes(roles: string[]) {
       let accessedRouters;
 
       // admin
