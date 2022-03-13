@@ -89,6 +89,22 @@ export interface IMedCase {
   parties: IParty[];
 }
 
+export type IDocType =
+  | 'cover'
+  | 'catelog'
+  | 'close_rpt'
+  | 'agreement'
+  | 'acception'
+  | 'notice'
+  | 'application'
+  | 'record'
+  | 'med_note'
+  | 'mediation'
+  | 'receipt'
+  | 'confirmation'
+  | 'termination'
+  | 'all';
+
 // API
 export type IReqGetCase = WithCondition<{
   acceptDate: string;

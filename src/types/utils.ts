@@ -14,6 +14,11 @@ export type GetRequired<T> = {
 };
 
 /**
+ * 获取对象的所有值类型
+ */
+export type GetObjectValueType<T extends Record<string, any>> = T extends Record<string, infer V> ? V : never;
+
+/**
  * is类型保护
  * @example if(is<Type>(data)) { // 作用域内所有data类型均为Type }
  * @param value

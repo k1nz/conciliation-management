@@ -42,28 +42,53 @@
       </template>
 
       <template #op="{ row, rowIndex }">
-        <t-tooltip content="详情" style="margin: 0 25px 0px 0">
-          <t-icon name="bulletpoint" size="xs" style="cursor: pointer" @click="handleClickDetail(row)" />
-        </t-tooltip>
-        <t-tooltip theme="danger" :content="row.archiveDate ? '已归档无法删除' : '删除'" style="margin: 0 25px 0px 0">
-          <t-icon
-            name="delete"
-            size="xs"
-            :style="{ cursor: row.archiveDate ? 'not-allowed' : 'pointer' }"
-            @click="showDialog('delete', rowIndex, row)"
-          />
-        </t-tooltip>
-        <t-tooltip theme="primary" content="打印预览" style="margin: 0 25px 0px 0">
-          <t-icon name="print" size="xs" style="cursor: pointer" @click="handlePreview(row)" />
-        </t-tooltip>
-        <t-tooltip theme="primary" :content="row.archiveDate ? '已归档' : '归档'" style="margin: 0 0px 0px 0">
-          <t-icon
-            name="save"
-            size="xs"
-            :style="{ cursor: row.archiveDate ? 'not-allowed' : 'pointer' }"
-            @click="showDialog('archive', rowIndex, row)"
-          />
-        </t-tooltip>
+        <div class="operators-container">
+          <t-tooltip content="详情">
+            <t-button shape="square" variant="text" @click="handleClickDetail(row)">
+              <template #icon>
+                <t-icon name="bulletpoint" size="xs" />
+              </template>
+            </t-button>
+          </t-tooltip>
+          <t-tooltip theme="danger" :content="row.archiveDate ? '已归档无法删除' : '删除'">
+            <t-button
+              shape="square"
+              variant="text"
+              :disabled="!!row.archiveDate"
+              @click="showDialog('delete', rowIndex, row)"
+            >
+              <template #icon>
+                <t-icon name="delete" size="xs" />
+              </template>
+            </t-button>
+          </t-tooltip>
+          <t-tooltip theme="primary" content="打印预览">
+            <t-dropdown
+              :options="printPreviewDropdownOptions"
+              trigger="click"
+              :max-height="400"
+              :max-column-width="200"
+            >
+              <t-button shape="square" variant="text" @click="handlePreviewDropdownClick(row)">
+                <template #icon>
+                  <t-icon name="print" size="xs" />
+                </template>
+              </t-button>
+            </t-dropdown>
+          </t-tooltip>
+          <t-tooltip theme="primary" :content="row.archiveDate ? '已归档' : '归档'">
+            <t-button
+              shape="square"
+              variant="text"
+              :disabled="!!row.archiveDate"
+              @click="showDialog('archive', rowIndex, row)"
+            >
+              <template #icon>
+                <t-icon name="save" size="xs" />
+              </template>
+            </t-button>
+          </t-tooltip>
+        </div>
       </template>
     </t-table>
     <t-dialog
@@ -96,6 +121,7 @@ import * as API from '@/api';
 import type * as BIZ from '@/types/business';
 import { getBaseURL } from '@/api';
 import { TOKEN_NAME } from '@/config/global';
+import { CASE_PDF_OPTIONS } from '@/constants';
 
 const hasPermission = usePermissionCheck();
 
@@ -164,9 +190,22 @@ const handleExport = () => {
   a.download = '数据报表.xlsx';
   a.click();
 };
-const handlePreview = (row: BIZ.IMedCase) => {
-  console.log('todo', row);
+
+// print preview
+const printPreviewDropdownOptions = computed(() => {
+  const { procedureKind, caseKind } = selectedData.value;
+  let res = CASE_PDF_OPTIONS[caseKind][procedureKind];
+  res = res.length ? res : [{ content: '当前案件类型无文书', value: null, disabled: true }];
+  return res;
+});
+const handlePreviewDropdownClick = (row: BIZ.IMedCase) => {
+  console.log('hello');
+  selectedData.value = row;
 };
+// const pdfPreview = ref<boolean>(false);
+// const handlePreview = () => {
+//   pdfPreview.value = true;
+// };
 
 // case detail
 const handleClickDetail = (row: BIZ.IMedCase) => {
@@ -228,4 +267,10 @@ const handleDialogConfirm = async () => {
   }
 };
 </script>
-<style lang="less"></style>
+<style lang="less">
+.operators-container {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+</style>

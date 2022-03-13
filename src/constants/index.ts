@@ -1,4 +1,5 @@
-import { CASE_PROCEDURE_TYPE, CASE_TYPE, PARTY_TYPE } from '@/types/business';
+import { CASE_PROCEDURE_TYPE, CASE_TYPE, IDocType, PARTY_TYPE } from '@/types/business';
+import { GetObjectValueType } from '@/types/utils';
 
 // 合同状态枚举
 export const CONTRACT_STATUS = {
@@ -113,3 +114,61 @@ export const PARTY_OPTIONS = [
   { label: '对方当事人', value: PARTY_TYPE.Second },
   { label: '第三人', value: PARTY_TYPE.Third },
 ];
+
+export enum DOC_TYPES {
+  cover = '卷宗（封皮）',
+  catelog = '卷宗（卷内目录）',
+  // eslint-disable-next-line camelcase
+  close_rpt = '结案报告',
+  agreement = '人民/治安调解协议书',
+  acception = '民间纠纷受理表',
+  notice = '权利义务告知书',
+  application = '调解申请书',
+  record = '调查笔录',
+  // eslint-disable-next-line camelcase
+  med_note = '调解笔录',
+  mediation = '民间纠纷受理调解表',
+  receipt = '收条',
+  confirmation = '司法确认申请书',
+  termination = '终止调解告知书',
+  all = '所有文书',
+}
+export const DOC_OPTIONS: Record<IDocType, { content: string; value: IDocType | null; disabled?: boolean }> = {
+  cover: { content: '卷宗（封皮）', value: 'cover' },
+  catelog: { content: '卷宗（卷内目录）', value: 'catelog' },
+  close_rpt: { content: '结案报告', value: 'close_rpt' },
+  agreement: { content: '人民/治安调解协议书', value: 'agreement' },
+  acception: { content: '民间纠纷受理表', value: 'acception' },
+  notice: { content: '权利义务告知书', value: 'notice' },
+  application: { content: '调解申请书', value: 'application' },
+  record: { content: '调查笔录', value: 'record' },
+  med_note: { content: '调解笔录', value: 'med_note' },
+  mediation: { content: '民间纠纷受理调解表', value: 'mediation' },
+  receipt: { content: '收条', value: 'receipt' },
+  confirmation: { content: '司法确认申请书', value: 'confirmation' },
+  termination: { content: '终止调解告知书', value: 'termination' },
+  all: { content: '所有文书', value: 'all' },
+};
+const { agreement, receipt, termination } = DOC_OPTIONS;
+const allDocValues = Object.values(DOC_OPTIONS);
+
+export const CASE_PDF_OPTIONS: Record<
+  CASE_TYPE,
+  Record<CASE_PROCEDURE_TYPE, GetObjectValueType<typeof DOC_OPTIONS>[]>
+> = {
+  [CASE_TYPE.People]: {
+    [CASE_PROCEDURE_TYPE.Easy]: [agreement, receipt, termination],
+    [CASE_PROCEDURE_TYPE.Normal]: allDocValues,
+    [CASE_PROCEDURE_TYPE.Judicial]: allDocValues,
+  },
+  [CASE_TYPE.Public]: {
+    [CASE_PROCEDURE_TYPE.Easy]: [agreement, receipt, termination],
+    [CASE_PROCEDURE_TYPE.Normal]: [],
+    [CASE_PROCEDURE_TYPE.Judicial]: [],
+  },
+  [CASE_TYPE.Stop]: {
+    [CASE_PROCEDURE_TYPE.Easy]: [],
+    [CASE_PROCEDURE_TYPE.Normal]: [],
+    [CASE_PROCEDURE_TYPE.Judicial]: [],
+  },
+};
