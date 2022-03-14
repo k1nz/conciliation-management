@@ -3,7 +3,12 @@
     <t-date-picker v-model="props.data.closeDate" theme="primary" mode="date" clearable />
   </t-form-item>
   <t-form-item label="调解结果" name="closingStatement">
-    <t-textarea v-model="props.data.acceptDate" placeholder="请输入" name="closingNote" :autosize="{ minRows: 6 }" />
+    <t-textarea
+      v-model="props.data.closingStatement"
+      placeholder="请输入"
+      name="closingNote"
+      :autosize="{ minRows: 6 }"
+    />
   </t-form-item>
   <t-form-item label="履行情况" name="executionKind">
     <t-radio-group
