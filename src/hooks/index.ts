@@ -1,4 +1,5 @@
 import { ref, Ref, onUnmounted, onMounted } from 'vue';
+import { useEventListener } from '@vueuse/core';
 import * as echarts from 'echarts/core';
 import { useUserStore } from '@/store';
 
@@ -25,11 +26,7 @@ export const useChart = (domId: string): Ref<echarts.ECharts> => {
     selfChart.value = echarts.init(chartContainer);
   });
 
-  window.addEventListener('resize', updateContainer, false);
-
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateContainer);
-  });
+  useEventListener(window, 'resize', updateContainer, false);
 
   return selfChart;
 };
