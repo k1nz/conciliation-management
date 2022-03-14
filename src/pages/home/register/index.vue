@@ -78,7 +78,7 @@ import { getBaseURL } from '@/api';
 import { TOKEN_NAME } from '@/config/global';
 import { CASE_PDF_OPTIONS } from '@/constants';
 import { DialogStateType, ITableRowOptions } from './type';
-import { IDocType } from '@/types/business';
+import { IDocPreviewHooksOptions } from '@/types/business';
 
 const hasPermission = usePermissionCheck();
 
@@ -152,16 +152,39 @@ const handleExport = () => {
 const printPreviewDropdownOptions = computed(() => {
   const { procedureKind, caseKind } = selectedData.value;
   let res = CASE_PDF_OPTIONS[caseKind][procedureKind];
-  res = res.length ? res : [{ content: '当前案件类型无文书', value: null, disabled: true }];
+  // debugger;
+  if (!res.length) res = [{ content: '当前案件类型无文书', value: null, disabled: true }];
+  else {
+    res.forEach((option) => {
+      if (Reflect.has(option, 'children') && selectedData.value.parties)
+        option.children = selectedData.value.parties.map((party) => ({
+          content: `${party.name}的${option.content}` || '当事人未填写名称',
+          value: party.partyId,
+        }));
+    });
+  }
   return res;
 });
 const handlePreviewDropdownClick = (row: BIZ.IMedCase) => {
+  Object.assign(PdfParams.value, { acceptDate: row.acceptDate, caseId: row.caseId });
   selectedData.value = row;
 };
-const currentDoc = ref<IDocType>('all');
-const openPdfPreview = usePdfPreview(currentDoc, selectedData as any);
-const onDropdownClick = ({ value: docName }: DropdownOption) => {
-  if (docName) currentDoc.value = docName as IDocType;
+const PdfParams = ref<IDocPreviewHooksOptions>({
+  acceptDate: '',
+  caseId: '',
+  docTyp: 'all',
+  partyId: '',
+});
+const openPdfPreview = usePdfPreview(PdfParams);
+const onDropdownClick = ({ value, path }: DropdownOption) => {
+  const pathArr = path.split('/');
+  if (pathArr.length === 2 && value) {
+    const [, docTyp] = pathArr;
+    Object.assign(PdfParams.value, { docTyp });
+  } else if (pathArr.length === 3 && value) {
+    const [, docTyp, partyId] = pathArr;
+    Object.assign(PdfParams.value, { partyId, docTyp });
+  }
   openPdfPreview();
 };
 

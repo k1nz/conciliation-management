@@ -105,6 +105,13 @@ export type IDocType =
   | 'termination'
   | 'all';
 
+export interface IDocPreviewHooksOptions {
+  partyId?: string;
+  caseId: string;
+  acceptDate: string;
+  docTyp: IDocType;
+}
+
 // API
 export type IReqGetCase = WithCondition<{
   acceptDate: string;
@@ -197,5 +204,6 @@ export interface IReqPdfStream {
   docTyp: IDocType;
   partyId?: string;
   disposition?: 'attachment' | 'inline';
+  __token: string;
 }
 // API END

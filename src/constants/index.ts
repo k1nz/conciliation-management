@@ -133,15 +133,21 @@ export enum DOC_TYPES {
   termination = '终止调解告知书',
   all = '所有文书',
 }
-export const DOC_OPTIONS: Record<IDocType, { content: string; value: IDocType | null; disabled?: boolean }> = {
+type IDocDropdownOption<T = IDocType | null> = {
+  content: string;
+  value: T;
+  disabled?: boolean;
+  children?: IDocDropdownOption<any>[];
+};
+export const DOC_OPTIONS: Record<IDocType, IDocDropdownOption> = {
   cover: { content: '卷宗（封皮）', value: 'cover' },
   catalog: { content: '卷宗（卷内目录）', value: 'catalog' },
   close_rpt: { content: '结案报告', value: 'close_rpt' },
   agreement: { content: '人民/治安调解协议书', value: 'agreement' },
   acception: { content: '民间纠纷受理表', value: 'acception' },
   notice: { content: '权利义务告知书', value: 'notice' },
-  application: { content: '调解申请书', value: 'application' },
-  record: { content: '调查笔录', value: 'record' },
+  application: { content: '调解申请书', value: 'application', children: [] },
+  record: { content: '调查笔录', value: 'record', children: [] },
   med_note: { content: '调解笔录', value: 'med_note' },
   mediation: { content: '民间纠纷受理调解表', value: 'mediation' },
   receipt: { content: '收条', value: 'receipt' },
