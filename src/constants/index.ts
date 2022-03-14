@@ -135,7 +135,7 @@ export enum DOC_TYPES {
 }
 export const DOC_OPTIONS: Record<IDocType, { content: string; value: IDocType | null; disabled?: boolean }> = {
   cover: { content: '卷宗（封皮）', value: 'cover' },
-  catelog: { content: '卷宗（卷内目录）', value: 'catelog' },
+  catalog: { content: '卷宗（卷内目录）', value: 'catalog' },
   close_rpt: { content: '结案报告', value: 'close_rpt' },
   agreement: { content: '人民/治安调解协议书', value: 'agreement' },
   acception: { content: '民间纠纷受理表', value: 'acception' },

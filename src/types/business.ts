@@ -91,7 +91,7 @@ export interface IMedCase {
 
 export type IDocType =
   | 'cover'
-  | 'catelog'
+  | 'catalog'
   | 'close_rpt'
   | 'agreement'
   | 'acception'
