@@ -63,12 +63,13 @@ export const useCounter = (duration = 60): [Ref<number>, () => void] => {
 /**
  * permission utils
  */
-export const usePermissionCheck = () => {
+export const usePermissionCheck = (): ((permissionArr: string[]) => boolean) => {
   const userStore = useUserStore();
   const roles = userStore.getRoles;
-  const hasPermission = (permissionArr: string[]): boolean => {
+
+  return (permissionArr: string[]): boolean => {
     return [...permissionArr, 'ADMIN'].some((e) => roles.includes(e));
   };
+};
 
-  return hasPermission;
 };
