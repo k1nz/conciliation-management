@@ -129,11 +129,12 @@ export interface IReqCreateCase extends Partial<Omit<IMedCase, 'parties'>> {
   parties?: GetPartsRequired<Partial<IParty>, 'partyId' | 'applicationDate'>[];
 }
 export type IReqUpdateCase = IReqCreateCase;
-export interface IReqDeleteCase {
+export interface ICasePrimaryKey {
   acceptDate: string;
   caseId: string;
 }
-export type IReqArchive = IReqDeleteCase;
+export type IReqDeleteCase = ICasePrimaryKey;
+export type IReqArchive = ICasePrimaryKey;
 
 // 当事人
 export type IReqGetParty = WithCondition<{
@@ -189,4 +190,12 @@ export interface IResUpload extends IReqUpload {
   uploadTm?: string;
 }
 
+// pdf stream
+export interface IReqPdfStream {
+  acceptDate: string;
+  caseId: string;
+  docTyp: IDocType;
+  partyId?: string;
+  disposition?: 'attachment' | 'inline';
+}
 // API END

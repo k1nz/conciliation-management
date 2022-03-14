@@ -78,3 +78,11 @@ export const upload = (data: FormData) => {
     data,
   });
 };
+// PDF流
+export const getPdfStream = (data: BIZ.IReqPdfStream) => {
+  return requestInstance.get<ArrayBuffer>({
+    url: `${SYS_PREFIX.pdf}`,
+    data,
+    responseType: 'arraybuffer',
+  });
+};

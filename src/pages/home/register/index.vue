@@ -42,53 +42,7 @@
       </template>
 
       <template #op="{ row, rowIndex }">
-        <div class="operators-container">
-          <t-tooltip content="详情">
-            <t-button shape="square" variant="text" @click="handleClickDetail(row)">
-              <template #icon>
-                <t-icon name="bulletpoint" size="xs" />
-              </template>
-            </t-button>
-          </t-tooltip>
-          <t-tooltip theme="danger" :content="row.archiveDate ? '已归档无法删除' : '删除'">
-            <t-button
-              shape="square"
-              variant="text"
-              :disabled="!!row.archiveDate"
-              @click="showDialog('delete', rowIndex, row)"
-            >
-              <template #icon>
-                <t-icon name="delete" size="xs" />
-              </template>
-            </t-button>
-          </t-tooltip>
-          <t-tooltip theme="primary" content="打印预览">
-            <t-dropdown
-              :options="printPreviewDropdownOptions"
-              trigger="click"
-              :max-height="400"
-              :max-column-width="200"
-            >
-              <t-button shape="square" variant="text" @click="handlePreviewDropdownClick(row)">
-                <template #icon>
-                  <t-icon name="print" size="xs" />
-                </template>
-              </t-button>
-            </t-dropdown>
-          </t-tooltip>
-          <t-tooltip theme="primary" :content="row.archiveDate ? '已归档' : '归档'">
-            <t-button
-              shape="square"
-              variant="text"
-              :disabled="!!row.archiveDate"
-              @click="showDialog('archive', rowIndex, row)"
-            >
-              <template #icon>
-                <t-icon name="save" size="xs" />
-              </template>
-            </t-button>
-          </t-tooltip>
-        </div>
+        <OperatorVNode :row-options="{ row, rowIndex }" />
       </template>
     </t-table>
     <t-dialog
@@ -105,12 +59,13 @@
     <DialogFormCase v-model:data="selectedData" v-model:visible="visible" :update-list="refresh" />
   </card>
 </template>
-<script setup lang="ts">
+<script setup lang="tsx">
 import { useRequest } from 'vue-request';
 import { ref, computed, reactive } from 'vue';
-import { MessagePlugin } from 'tdesign-vue-next';
+import { $computed } from 'vue/macros';
+import { DropdownOption, MessagePlugin } from 'tdesign-vue-next';
 import type { TableChangeData } from 'tdesign-vue-next';
-import { usePermissionCheck } from '@/hooks';
+import { usePdfPreview, usePermissionCheck } from '@/hooks';
 
 import Card from '@/components/card/index.vue';
 import PopupFormSearch from './components/PopupFormSearch.vue';
@@ -122,6 +77,8 @@ import type * as BIZ from '@/types/business';
 import { getBaseURL } from '@/api';
 import { TOKEN_NAME } from '@/config/global';
 import { CASE_PDF_OPTIONS } from '@/constants';
+import { DialogStateType, ITableRowOptions } from './type';
+import { IDocType } from '@/types/business';
 
 const hasPermission = usePermissionCheck();
 
@@ -199,13 +156,14 @@ const printPreviewDropdownOptions = computed(() => {
   return res;
 });
 const handlePreviewDropdownClick = (row: BIZ.IMedCase) => {
-  console.log('hello');
   selectedData.value = row;
 };
-// const pdfPreview = ref<boolean>(false);
-// const handlePreview = () => {
-//   pdfPreview.value = true;
-// };
+const currentDoc = ref<IDocType>('all');
+const openPdfPreview = usePdfPreview(currentDoc, selectedData as any);
+const onDropdownClick = ({ value: docName }: DropdownOption) => {
+  if (docName) currentDoc.value = docName as IDocType;
+  openPdfPreview();
+};
 
 // case detail
 const handleClickDetail = (row: BIZ.IMedCase) => {
@@ -214,12 +172,6 @@ const handleClickDetail = (row: BIZ.IMedCase) => {
 };
 
 // dialog
-interface DialogStateType {
-  mode: '' | 'delete' | 'archive';
-  confirmVisible: boolean;
-  selectedIndex: number;
-  confirmSuccess: () => void;
-}
 const dialogState = reactive<DialogStateType>({
   mode: '',
   confirmVisible: false,
@@ -257,15 +209,83 @@ const handleDialogConfirm = async () => {
   const { caseId, acceptDate } = data.value[dialogState.selectedIndex];
   switch (dialogState.mode) {
     case 'delete':
-      deleteCase({ acceptDate, caseId });
+      await deleteCase({ acceptDate, caseId });
       break;
     case 'archive':
-      caseArchive({ acceptDate, caseId });
+      await caseArchive({ acceptDate, caseId });
       break;
     default:
       break;
   }
 };
+
+// table
+const operatorSpaceOptions = $computed(() => [
+  {
+    tooltip: () => '详情',
+    iconName: 'bulletpoint',
+    event: ({ row }: ITableRowOptions) => handleClickDetail(row),
+  },
+  {
+    tooltip: ({ row }: ITableRowOptions) => (row.archiveDate ? '已归档无法删除' : '删除'),
+    tooltipTheme: 'danger',
+    iconName: 'delete',
+    disabled: ({ row }: ITableRowOptions) => !!row.archiveDate,
+    event: ({ rowIndex, row }: ITableRowOptions) => showDialog('delete', rowIndex, row),
+  },
+  {
+    tooltip: () => '打印预览',
+    iconName: 'print',
+    isDropdown: true,
+    dropdownOptions: printPreviewDropdownOptions.value,
+    event: ({ row }: ITableRowOptions) => handlePreviewDropdownClick(row),
+  },
+  {
+    tooltip: ({ row }: ITableRowOptions) => (row.archiveDate ? '已归档' : '归档'),
+    iconName: 'save',
+    disabled: ({ row }: ITableRowOptions) => !!row.archiveDate,
+    event: ({ rowIndex, row }: ITableRowOptions) => showDialog('archive', rowIndex, row),
+  },
+]);
+
+const OperatorBtn = ({
+  rowOptions,
+  operator,
+}: {
+  rowOptions: ITableRowOptions;
+  operator: Partial<typeof operatorSpaceOptions[number]>;
+}) => (
+  <t-button
+    shape="square"
+    variant="text"
+    disabled={operator.disabled?.(rowOptions) || false}
+    onClick={() => operator.event?.(rowOptions)}
+  >
+    {{ icon: () => <t-icon name={operator.iconName} size="xs" /> }}
+  </t-button>
+);
+
+const OperatorVNode = ({ 'row-options': rowOptions }: { 'row-options': ITableRowOptions }) => (
+  <div class="operators-container">
+    {operatorSpaceOptions.map((operator, idx) => (
+      <t-tooltip theme={operator.tooltipTheme || 'primary'} content={operator.tooltip(rowOptions)} key={idx}>
+        {operator.isDropdown ? (
+          <t-dropdown
+            options={operator.dropdownOptions}
+            trigger="click"
+            max-height={400}
+            max-column-width={200}
+            onClick={onDropdownClick}
+          >
+            <OperatorBtn rowOptions={rowOptions} operator={operator} />
+          </t-dropdown>
+        ) : (
+          <OperatorBtn rowOptions={rowOptions} operator={operator} />
+        )}
+      </t-tooltip>
+    ))}
+  </div>
+);
 </script>
 <style lang="less">
 .operators-container {

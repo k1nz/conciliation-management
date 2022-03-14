@@ -1,7 +1,11 @@
 import { ref, Ref, onUnmounted, onMounted } from 'vue';
+import { $computed } from 'vue/macros';
 import { useEventListener } from '@vueuse/core';
 import * as echarts from 'echarts/core';
 import { useUserStore } from '@/store';
+import { IDocType, IMedCase } from '@/types/business';
+import { getBaseURL } from '@/api';
+import { GetPartsRequired } from '@/types/utils';
 
 /**
  * eChart hook
@@ -72,4 +76,32 @@ export const usePermissionCheck = (): ((permissionArr: string[]) => boolean) => 
   };
 };
 
+/**
+ * pdf
+ */
+export const usePdfPreview = (
+  docTyp: Ref<IDocType>,
+  caseInfo: Ref<GetPartsRequired<IMedCase, 'caseId' | 'acceptDate'>>,
+): (() => void) => {
+  const userStore = useUserStore();
+  // const queryParams = $computed(() => ({
+  //   acceptDate: caseInfo.value.acceptDate,
+  //   caseId: caseInfo.value.caseId,
+  //   docTyp,
+  //   __token: userStore.token,
+  //   disposition: 'inline',
+  // }));
+  const previewUrl = $computed(() => {
+    return `${getBaseURL()}/pdf?${new URLSearchParams({
+      acceptDate: caseInfo.value.acceptDate,
+      caseId: caseInfo.value.caseId,
+      docTyp: docTyp.value,
+      __token: userStore.token,
+      disposition: 'inline',
+    }).toString()}`;
+  });
+
+  return () => {
+    window.open(previewUrl);
+  };
 };
