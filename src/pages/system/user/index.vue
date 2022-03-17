@@ -11,15 +11,17 @@
             class="search-input"
             placeholder="请输入你需要搜索的内容"
             clearable
-            @enter="refresh"
+            @enter="handleSearch(true)"
           >
           </t-input>
-          <t-button @click="refresh">
-            <template #icon>
-              <search-icon size="20px" />
-            </template>
-            搜索
-          </t-button>
+          <div>
+            <t-button @click="handleSearch(true)">
+              <template #icon>
+                <search-icon size="20px" />
+              </template>
+              搜索
+            </t-button>
+          </div>
         </div>
       </t-row>
 
@@ -70,7 +72,7 @@
       }"
       @confirm="onConfirmDelete"
     />
-    <dialog-form v-model:data="selectedData" v-model:visible="visible" :update-user-list="refresh" />
+    <dialog-form v-model:data="selectedData" v-model:visible="visible" :update-user-list="handleSearch" />
   </div>
 </template>
 
@@ -124,32 +126,39 @@ export default defineComponent({
   },
   setup() {
     const hasPermission = usePermissionCheck();
-    // data init
-    const pagination = ref<typeof DEFAULT_PAGINATION & { total?: number }>(DEFAULT_PAGINATION);
-    const selectedData = ref<USER.IUserType>(INITIAL_DATA);
-    const queryParams = ref<SYS.IReqGetUser>({
-      __limit: DEFAULT_PAGINATION.pageSize,
-      __page: DEFAULT_PAGINATION.current,
-      __sortBy: 'createTime$desc',
-    });
 
     // request
+    const pagination = ref<typeof DEFAULT_PAGINATION & { total?: number }>(DEFAULT_PAGINATION);
+    const queryParams = ref({
+      __sortBy: 'createTime$desc',
+    });
+    const refreshDeps = computed(() => ({
+      __limit: pagination.value.pageSize,
+      __page: pagination.value.current,
+    }));
+    const queryParamsFormat = computed<SYS.IReqGetUser>(() => ({
+      ...refreshDeps.value,
+      ...queryParams.value,
+    }));
     const {
       data: list,
       loading,
       refresh,
-    } = useRequest(() => API.getUser(queryParams.value), {
-      refreshDeps: [queryParams],
-      debounceInterval: 1000,
+    } = useRequest(() => API.getUser(queryParamsFormat.value), {
+      refreshDeps: [refreshDeps],
       onSuccess: (res) => {
         if (res.count !== undefined) {
-          pagination.value.total = res.count!;
+          pagination.value.total = res.count || 0;
         }
       },
     });
     const data = computed(() => {
-      return list?.value?.data;
+      return list?.value?.data || [];
     });
+    const handleSearch = async (resetPagination = true) => {
+      if (resetPagination) pagination.value = { ...pagination.value, current: 1 };
+      else await refresh();
+    };
 
     const rehandleChange = (changeParams: TableChangeData) => {
       const { pageSize, current } = changeParams.pagination!;
@@ -157,11 +166,6 @@ export default defineComponent({
         ...pagination.value,
         pageSize: pageSize as number,
         current: current || 1,
-      };
-      queryParams.value = {
-        ...queryParams.value,
-        __limit: pageSize as number,
-        __page: current || 1,
       };
     };
 
@@ -176,6 +180,7 @@ export default defineComponent({
     };
 
     // user detail
+    const selectedData = ref<USER.IUserType>(INITIAL_DATA);
     const handleClickDetail = (row: USER.IUserType) => {
       selectedData.value = { ...row };
       visible.value = true;
@@ -199,7 +204,7 @@ export default defineComponent({
       deleteIdx.value = -1;
     };
     const deleteCallback = () => {
-      refresh();
+      handleSearch();
       confirmVisible.value = false;
       MessagePlugin.success('删除成功');
       resetIdx();
@@ -229,6 +234,7 @@ export default defineComponent({
       data,
       list,
       refresh,
+      handleSearch,
       hasPermission,
       visible,
       queryParams,

@@ -50,7 +50,7 @@ export const useUserStore = defineStore('user', {
       if (typeof redirect === 'string') {
         await router.push(redirect);
       } else {
-        await router.push('/home');
+        await router.push('/');
       }
     },
     async getUserInfo() {

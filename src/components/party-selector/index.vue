@@ -22,7 +22,7 @@
           class="search-input"
           placeholder="输入姓名，按回车搜索"
           clearable
-          @enter="refresh"
+          @enter="handleSearch(true)"
         >
         </t-input>
       </div>
@@ -79,7 +79,7 @@
         </div>
       </template>
     </t-table>
-    <dialog-upload v-model:visible="uploadVisible" :data="selectedData" :update-list="refresh" />
+    <dialog-upload v-model:visible="uploadVisible" :data="selectedData" :update-list="handleSearch" />
   </div>
 </template>
 <script lang="ts">
@@ -212,6 +212,10 @@ const {
 const data = computed(() => {
   return list?.value?.data || [];
 });
+const handleSearch = async (resetPagination = true) => {
+  if (resetPagination) pagination.value = { ...pagination.value, current: 1 };
+  else await refresh();
+};
 const rehandleChange = (changeParams: TableChangeData) => {
   const { pageSize, current } = changeParams.pagination!;
   pagination.value = {

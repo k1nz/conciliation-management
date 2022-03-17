@@ -10,7 +10,7 @@
           class="search-input"
           placeholder="请输入姓名搜索"
           clearable
-          @enter="refresh"
+          @enter="handleSearch(true)"
         >
         </t-input>
       </div>
@@ -89,8 +89,8 @@
       }"
       @confirm="handleDialogConfirm"
     />
-    <dialog-form-party v-model:data="selectedData" v-model:visible="visible" :update-list="refresh" />
-    <dialog-upload v-model:visible="uploadVisible" :data="selectedData" :update-list="refresh" />
+    <dialog-form-party v-model:data="selectedData" v-model:visible="visible" :update-list="handleSearch" />
+    <dialog-upload v-model:visible="uploadVisible" :data="selectedData" :update-list="handleSearch" />
   </card>
 </template>
 <script setup lang="ts">
@@ -123,14 +123,17 @@ const selectedData = ref<Partial<BIZ.IParty>>(PARTY_INITIAL_DATA);
 const queryParams = ref<BIZ.IReqGetParty>({
   applicationDate$ge: dayjs().subtract(1, 'year').format('YYYY-MM-DD'),
   applicationDate$lt: dayjs().format('YYYY-MM-DD'),
-  __limit: DEFAULT_PAGINATION.pageSize,
-  __page: DEFAULT_PAGINATION.current,
   __sortBy: 'applicationDate$desc',
 });
+const refreshDeps = computed(() => ({
+  __limit: pagination.value.pageSize,
+  __page: pagination.value.current,
+}));
 const queryParamsFormat = computed(() => {
   const { applicationDate$ge, applicationDate$lt } = queryParams.value;
   return {
     ...queryParams.value,
+    ...refreshDeps.value,
     applicationDate$ge: `${applicationDate$ge} 00:00:00`,
     applicationDate$lt: `${applicationDate$lt} 23:59:59`,
   };
@@ -148,27 +151,26 @@ const {
   loading,
   refresh,
 } = useRequest(() => API.getParty(queryParamsFormat.value), {
-  refreshDeps: [queryParamsFormat],
+  refreshDeps: [refreshDeps],
   onSuccess: (res) => {
     if (res.count !== undefined) {
-      pagination.value.total = res.count!;
+      pagination.value.total = res.count || 0;
     }
   },
 });
 const data = computed(() => {
   return list?.value?.data || [];
 });
+const handleSearch = async (resetPagination = true) => {
+  if (resetPagination) pagination.value = { ...pagination.value, current: 1 };
+  else await refresh();
+};
 const rehandleChange = (changeParams: TableChangeData) => {
   const { pageSize, current } = changeParams.pagination!;
   pagination.value = {
     ...pagination.value,
     pageSize: pageSize as number,
     current: current || 1,
-  };
-  queryParams.value = {
-    ...queryParams.value,
-    __limit: pageSize as number,
-    __page: current || 1,
   };
 };
 
@@ -201,7 +203,7 @@ const dialogState = reactive<DialogStateType>({
   confirmVisible: false,
   selectedIndex: -1,
   confirmSuccess: () => {
-    refresh();
+    handleSearch();
     MessagePlugin.success(dialogState.mode === 'delete' ? '删除成功' : '');
     resetDialogState();
   },

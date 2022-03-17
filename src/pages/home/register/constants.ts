@@ -98,9 +98,7 @@ export const DEFAULT_SEARCH_PARAMS = {
   caseKind: undefined,
   procedureKind: undefined,
   disputeKind: '',
-  acceptor: '',
+  acceptor$like: '',
   closeDate: '',
-  __limit: DEFAULT_PAGINATION.pageSize,
-  __page: DEFAULT_PAGINATION.current,
   __sortBy: 'acceptDate$desc',
 };

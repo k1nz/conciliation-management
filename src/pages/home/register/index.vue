@@ -6,7 +6,7 @@
         <t-button variant="base" theme="default" @click="handleExport"> 导出 </t-button>
       </div>
       <div style="display: flex; flex-direction: row; gap: 20px">
-        <PopupFormSearch v-model:data="queryParams" />
+        <PopupFormSearch v-model:data="queryParams" :update-list="handleSearch" />
       </div>
     </t-row>
 
@@ -56,7 +56,7 @@
       }"
       @confirm="handleDialogConfirm"
     />
-    <DialogFormCase v-model:data="selectedData" v-model:visible="visible" :update-list="refresh" />
+    <DialogFormCase v-model:data="selectedData" v-model:visible="visible" :update-list="handleSearch" />
   </card>
 </template>
 <script setup lang="tsx">
@@ -86,10 +86,15 @@ const hasPermission = usePermissionCheck();
 const pagination = ref<typeof DEFAULT_PAGINATION & { total?: number }>(DEFAULT_PAGINATION);
 const selectedData = ref<BIZ.IReqCreateCase>(CASE_INITIAL_DATA);
 const queryParams = ref<BIZ.IReqGetCase>(DEFAULT_SEARCH_PARAMS);
+const refreshDeps = computed(() => ({
+  __limit: pagination.value.pageSize,
+  __page: pagination.value.current,
+}));
 const queryParamsFormat = computed(() => {
   const { acceptDate$ge, acceptDate$lt } = queryParams.value;
   return {
     ...queryParams.value,
+    ...refreshDeps.value,
     acceptDate$ge: `${acceptDate$ge} 00:00:00`,
     acceptDate$lt: `${acceptDate$lt} 23:59:59`,
   };
@@ -100,18 +105,21 @@ const {
   data: list,
   loading,
   refresh,
-  // run,
 } = useRequest(() => API.getCase(queryParamsFormat.value), {
-  refreshDeps: [queryParamsFormat],
+  refreshDeps: [refreshDeps],
   onSuccess: (res) => {
     if (res.count !== undefined) {
-      pagination.value.total = res.count!;
+      pagination.value.total = res.count || 0;
     }
   },
 });
 const data = computed<BIZ.IMedCase[]>(() => {
   return list?.value?.data || [];
 });
+const handleSearch = async (resetPagination = true) => {
+  if (resetPagination) pagination.value = { ...pagination.value, current: 1 };
+  else await refresh();
+};
 
 const rehandleChange = (changeParams: TableChangeData) => {
   const { pageSize, current } = changeParams.pagination!;
@@ -119,11 +127,6 @@ const rehandleChange = (changeParams: TableChangeData) => {
     ...pagination.value,
     pageSize: pageSize as number,
     current: current || 1,
-  };
-  queryParams.value = {
-    ...queryParams.value,
-    __limit: pageSize as number,
-    __page: current || 1,
   };
 };
 
@@ -200,7 +203,7 @@ const dialogState = reactive<DialogStateType>({
   confirmVisible: false,
   selectedIndex: -1,
   confirmSuccess: () => {
-    refresh();
+    handleSearch(true);
     MessagePlugin.success(dialogState.mode === 'delete' ? '删除成功' : '归档成功');
     resetDialogState();
   },

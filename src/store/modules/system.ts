@@ -118,7 +118,7 @@ const useSystemStore = defineStore({
         console.log('获取字典失败');
         return Promise.reject(err);
       }
-      const { data: dictList } = data;
+      const { data: dictList } = data!;
       dictList?.forEach((dict) => {
         const { category } = dict;
         const key = DICT_TYPES[category] as keyof typeof DICT_TYPES;

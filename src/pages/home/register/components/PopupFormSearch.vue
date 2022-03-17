@@ -63,7 +63,7 @@
             <t-input v-model="localData.docNum"></t-input>
           </t-form-item>
           <t-form-item label="接办调解员" name="acceptor">
-            <t-input v-model="localData.acceptor"></t-input>
+            <t-input v-model="localData.acceptor$like"></t-input>
           </t-form-item>
           <t-form-item label="结案日期" name="closeDate">
             <t-date-picker v-model="localData.closeDate" theme="primary" mode="date" style="flex: 1" clearable>
@@ -88,7 +88,7 @@ import type * as BIZ from '@/types/business';
 import { PROCEDURE_KIND_OPTIONS, CASE_KIND_OPTIONS } from '@/constants';
 import CmSelector from '../../../../components/cm-selector/index.vue';
 
-const props = withDefaults(defineProps<{ data: BIZ.IReqGetCase }>(), {
+const props = withDefaults(defineProps<{ data: BIZ.IReqGetCase; updateList: () => Promise<any> }>(), {
   data: () => ({
     acceptDate$ge: dayjs().format('YYYY-MM-DD'),
     acceptDate$lt: dayjs().format('YYYY-MM-DD'),
@@ -133,10 +133,12 @@ const visibleChange = () => {
 const reset = () => {
   localData.value = { ...defaultData };
   emit('update:data', { ...props.data, ...defaultData });
+  props.updateList?.();
 };
 const handleSearch = () => {
   visibleChange();
   emit('update:data', { ...props.data, ...localData.value });
+  props.updateList?.();
 };
 </script>
 <style lang="less">
