@@ -34,7 +34,7 @@ const { userInfo } = storeToRefs(useUserStore());
 const investigator = computed({
   get(): string {
     const { investigator } = props.case.parties[props.currentPartyIdx];
-    if (investigator) return investigator;
+    if (investigator !== undefined) return investigator;
     Reflect.set(props.case.parties[props.currentPartyIdx], 'investigator', userInfo.value.userName);
     return userInfo.value.userName!;
   },
@@ -45,12 +45,12 @@ const investigator = computed({
 const mediator = computed({
   get(): string {
     const { mediator } = props.case;
-    if (mediator) return mediator;
+    if (mediator !== undefined) return mediator;
     Reflect.set(props.case, 'mediator', userInfo.value.userName);
     return userInfo.value.userName!;
   },
   set(newVal: string) {
-    Reflect.set(props.case, 'medRecorder', newVal);
+    Reflect.set(props.case, 'mediator', newVal);
   },
 });
 </script>
@@ -87,7 +87,7 @@ const mediator = computed({
         <t-input v-model="props.case.parties[props.currentPartyIdx].recorder" placeholder="请输入内容"></t-input>
       </t-form-item>
       <t-form-item label="被调查人" name="name">
-        <t-input v-model="props.case.parties[props.currentPartyIdx].name" placeholder="请输入内容"></t-input>
+        <t-input v-model="props.case.parties[props.currentPartyIdx].name" placeholder="请输入内容" readonly></t-input>
       </t-form-item>
       <t-form-item label="调查笔录" name="note">
         <t-textarea
