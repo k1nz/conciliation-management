@@ -1,8 +1,11 @@
 import dayjs from 'dayjs';
+import { YAXisOption } from 'echarts/types/dist/shared';
 import * as echarts from 'echarts/core';
 import { Color } from 'tvision-color';
 import { getBrandColor, defaultLightColor, defaultDarkColor } from '@/config/color';
 import { useSettingStore } from '@/store/modules/setting';
+import { IMedAnnualReport, IMedMonthlyReport, IMedQuarterlyReport, IMedSemiannualReport } from '@/types/business';
+import Record from '@/components/mediate-record/Record.vue';
 
 const settingStore = useSettingStore();
 
@@ -529,6 +532,194 @@ export function getFolderLineDataSet({
       },
     ],
   };
+}
+
+/**
+ *  报表数据源
+ */
+type OriginDataType = Array<IMedMonthlyReport | IMedQuarterlyReport | IMedSemiannualReport | IMedAnnualReport>;
+interface IGetReportDataSet extends Record<string, unknown> {
+  type: 'month' | 'quarter' | 'semiannual' | 'annual';
+  data: OriginDataType;
+}
+export function getReportDataSet({ type, data, placeholderColor, borderColor }: IGetReportDataSet) {
+  const caseCount: number[] = [];
+  const partyCount: number[] = [];
+  const moneyInvolvedCount: number[] = [];
+  const map = new Map<number, IMedMonthlyReport | IMedQuarterlyReport | IMedSemiannualReport>();
+  const xAxisLabel: Record<string, string[]> = {
+    month: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    quarter: ['春季', '夏季', '秋季', '冬季'],
+    semiannual: ['上半年', '下半年'],
+    annual: [],
+  };
+  /**
+   * 将请求数据data转为折线图所需的数据
+   * @param originalData 源数据（请求数据）
+   * @param key 唯一标识符，必须为originalData的键名
+   * @param groupCount x轴数据组数量
+   */
+  function setChartData<
+    T extends Array<IMedMonthlyReport | IMedQuarterlyReport | IMedSemiannualReport>,
+    U extends 'month' | 'quarter' | 'half',
+  >(originalData: T, key: T extends Array<infer P> ? (U extends keyof P ? U : never) : never, groupCount: number) {
+    originalData.forEach((e) => map.set(e[key], e));
+    for (let i = 0; i < groupCount; i++) {
+      if (map.has(i + 1)) {
+        const { caseCnt, partyCnt, moneyInvolved } = map.get(i + 1)!;
+        caseCount[i] = caseCnt;
+        partyCount[i] = partyCnt;
+        moneyInvolvedCount[i] = Number(Number(moneyInvolved).toFixed(2));
+      } else {
+        caseCount[i] = 0;
+        partyCount[i] = 0;
+        moneyInvolvedCount[i] = 0;
+      }
+    }
+    map.clear();
+  }
+  switch (type) {
+    case 'month': {
+      setChartData(data as IMedMonthlyReport[], 'month', 12);
+      break;
+    }
+    case 'quarter': {
+      setChartData(data as IMedQuarterlyReport[], 'quarter', 4);
+      break;
+    }
+    case 'semiannual': {
+      setChartData(data as IMedSemiannualReport[], 'half', 2);
+      break;
+    }
+    case 'annual': {
+      (data as IMedAnnualReport[]).forEach((e, i) => {
+        const { year, caseCnt, partyCnt, moneyInvolved } = e;
+        xAxisLabel.annual.push(`${year}年`);
+        caseCount[i] = caseCnt || 0;
+        partyCount[i] = partyCnt || 0;
+        moneyInvolvedCount[i] = Number(Number(moneyInvolved).toFixed(2)) || 0;
+      });
+      break;
+    }
+    default:
+      break;
+  }
+  const commonOptions = {
+    smooth: false,
+    showSymbol: true,
+    symbol: 'circle',
+    symbolSize: 8,
+    itemStyle: {
+      normal: {
+        borderColor,
+        borderWidth: 1,
+      },
+    },
+  };
+  const yAxisOptions: YAXisOption = {
+    type: 'value',
+    axisLabel: {
+      color: placeholderColor as string,
+      align: 'center',
+      margin: 40,
+    },
+    axisLine: {
+      show: true,
+      lineStyle: {
+        color: borderColor as string,
+        type: 'solid',
+      },
+    },
+    axisTick: {
+      show: true,
+      length: 15,
+      alignWithLabel: true,
+    },
+  };
+  const dataSet = {
+    tooltip: {
+      trigger: 'axis',
+    },
+    legend: {
+      data: ['案件数量', '涉案人数', '涉案金额'],
+    },
+    grid: {
+      left: '3%',
+      right: '3%',
+      bottom: '3%',
+      containLabel: true,
+    },
+    toolbox: {
+      feature: {
+        saveAsImage: {},
+      },
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: xAxisLabel[type],
+    },
+    yAxis: [
+      {
+        ...yAxisOptions,
+        name: '案件数量',
+        axisLabel: {
+          ...yAxisOptions.axisLabel,
+          formatter: '{value} 起',
+        },
+        position: 'left',
+        max: Math.max(...caseCount) + Math.max(...caseCount) / 10,
+        min: 0,
+      },
+      {
+        ...yAxisOptions,
+        name: '涉案人数',
+        axisLabel: {
+          ...yAxisOptions.axisLabel,
+          formatter: '{value} 人',
+        },
+        position: 'right',
+        max: Math.max(...partyCount) + Math.max(...partyCount) / 10,
+        min: 0,
+      },
+      {
+        ...yAxisOptions,
+        name: '涉案金额',
+        axisLabel: {
+          ...yAxisOptions.axisLabel,
+          formatter: '{value} 万元',
+        },
+        offset: 60,
+        max: Math.max(...moneyInvolvedCount) + Math.max(...moneyInvolvedCount) / 10,
+        min: 0,
+      },
+    ],
+    series: [
+      {
+        ...commonOptions,
+        name: '案件数量',
+        type: 'line',
+        data: caseCount,
+        yAxisIndex: 0,
+      },
+      {
+        ...commonOptions,
+        name: '涉案人数',
+        type: 'line',
+        data: partyCount,
+        yAxisIndex: 1,
+      },
+      {
+        ...commonOptions,
+        name: '涉案金额',
+        type: 'line',
+        data: moneyInvolvedCount,
+        yAxisIndex: 2,
+      },
+    ],
+  };
+
+  return dataSet;
 }
 
 /**

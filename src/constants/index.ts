@@ -178,3 +178,15 @@ export const CASE_PDF_OPTIONS: Record<
     [CASE_PROCEDURE_TYPE.Judicial]: [],
   },
 };
+
+export enum SemiannualType {
+  FirstHalf = 1,
+  SecondHalf,
+}
+
+export enum QuarterType {
+  Spring = 1,
+  Summer,
+  Autumn,
+  Winter,
+}

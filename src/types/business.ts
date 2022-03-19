@@ -1,6 +1,8 @@
-import { GENDER_TYPE } from '@/constants';
+import { GENDER_TYPE, QuarterType, SemiannualType } from '@/constants';
 import { WithCondition } from './request';
 import { GetPartsRequired } from '@/types/utils';
+
+export type MonthType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export enum PARTY_TYPE {
   First = 1,
@@ -206,4 +208,67 @@ export interface IReqPdfStream {
   disposition?: 'attachment' | 'inline';
   __token: string;
 }
+
+/**
+ * 报表
+ */
+// 请求数据类型
+export interface IRootGetReport {
+  city?: string;
+  district?: string;
+  medOfficeId?: string;
+  year: number;
+}
+export interface IGetMonthlyReport extends IRootGetReport {
+  month?: MonthType;
+}
+export interface IGetQuarterlyReport extends IRootGetReport {
+  quarter?: QuarterType;
+}
+export interface IGetSemiannualReport extends IRootGetReport {
+  half?: SemiannualType;
+}
+export interface IGetRangeAnnualReport extends Omit<IRootGetReport, 'year'> {
+  yearStart: number;
+  yearEnd: number;
+}
+export type IGetPreciseAnnualReport = IRootGetReport;
+
+// 返回数据类型
+export interface IMedReport {
+  year: number;
+  /**
+   * 案件数量
+   */
+  caseCnt: number;
+  /**
+   * 涉案人数
+   */
+  partyCnt: number;
+  /**
+   * 涉案金额
+   */
+  moneyInvolved: string;
+  /**
+   * 人民调解编号
+   */
+  peopleMedDocNumList: string;
+  /**
+   * 治安调解编号
+   */
+  securityMedDocNumList: string;
+}
+export interface IMedMonthlyReport extends IMedReport {
+  month: MonthType;
+}
+
+export interface IMedQuarterlyReport extends IMedReport {
+  quarter: QuarterType;
+}
+
+export interface IMedSemiannualReport extends IMedReport {
+  half: SemiannualType;
+}
+
+export type IMedAnnualReport = IMedReport;
 // API END
