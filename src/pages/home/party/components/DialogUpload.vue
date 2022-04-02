@@ -1,33 +1,36 @@
 <template>
-  <t-dialog
+  <TDialog
     v-model:visible="props.visible"
     placement="center"
     :header="`${localData.name}的证件照片`"
     :confirm-btn="null"
-    :cancel-btn="null"
-    width="50%"
+    :cancel-btn="{
+      content: '关闭',
+    }"
+    width="60%"
+    @confirm="confirm"
     @close="close"
   >
-    <div v-if="preview">
-      <t-button :loading="submitLoading" @click="clearFile">删除证件照片</t-button>
-      <br />
-      <br />
-      <img :src="preview" alt="令牌失效，请重新登录" style="max-width: 100%; max-height: 800px" />
+    <div>
+      <t-button :loading="submitLoading" @click="confirm">上传证件照片</t-button>
+      <t-button v-if="preview" :loading="submitLoading" @click="clearFile">删除证件照片</t-button>
+      <div v-if="preview" class="previewArea">
+        <img :src="preview" alt="令牌失效，请重新登录" />
+      </div>
     </div>
     <t-upload
+      v-show="false"
+      ref="uploadRef"
       v-model="uploadState.files"
-      :auto-upload="false"
-      theme="file-flow"
+      theme="files"
+      draggable
       accept="image/*"
-      multiple
-      :data="postData"
-      :max="1"
-      :size-limit="{ size: 0.5, unit: 'MB', message: '图片大小不超过512KB' }"
       :before-upload="handleBeforeUpload"
       :request-method="handleRequestMethod"
       @remove="onRemove"
+      @success="handleSubmitSuccess"
     />
-  </t-dialog>
+  </TDialog>
 </template>
 
 <script lang="ts">
@@ -39,7 +42,8 @@ export default {
 <script setup lang="ts">
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { RequestMethodResponse, UploadFile, UploadRemoveContext } from 'tdesign-vue-next';
-import { computed, reactive, ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
+import { $computed } from 'vue/macros';
 import type { PropType } from 'vue';
 import { to } from 'await-to-js';
 import * as API from '@/api';
@@ -67,11 +71,10 @@ const props = defineProps({
   updateList: {
     type: Function as PropType<() => Promise<any>>,
     default: () => {
-      console.log('no update-list props');
+      console.error('not provide update-list props');
     },
   },
 });
-
 // main
 const localData = ref<IPropsData>({ ...props.data });
 watch(
@@ -79,43 +82,45 @@ watch(
   (newVal) => {
     if (newVal) {
       localData.value = { ...props.data };
-      preview.value = preUrl.value;
+      console.log(localData.value);
+      preview.value = preUrl;
     }
   },
 );
-const preUrl = computed(() => {
+const preUrl = $computed(() => {
   const tokenSuffix = `&__token=${userStore.token}`;
   return `${props.data.idCardPhotoMediaUrl ? props.data.idCardPhotoMediaUrl + tokenSuffix : ''}`;
 });
 const preview = ref<string>('');
 const uploadState = reactive({
-  headers: { 'X-Auth-Token': userStore.token },
+  size: 0.5 * 1024 * 1024,
   files: [],
 });
-const postData = reactive<Record<string, any>>({
+const postData = $computed<Record<string, any>>(() => ({
   typ: 'image/jpeg',
   usage: 'party-id-card-photo',
-  mediaTm: props.data.idCardPhotoMediaTm,
-  mediaId: props.data.idCardPhotoMediaId,
-  refId: props.data.partyId,
-  refTm: props.data.applicationDate,
-});
+  mediaTm: localData.value.idCardPhotoMediaTm,
+  mediaId: localData.value.idCardPhotoMediaId,
+  refId: localData.value.partyId,
+  refTm: localData.value.applicationDate,
+}));
 // upload hook
 const fileTypes = ['image/jpeg', 'image/pjpeg', 'image/png'];
 const validFileType = (file: File) => {
   return fileTypes.includes(file.type);
 };
 const handleBeforeUpload = (file: File | UploadFile): boolean | Promise<boolean> => {
-  if (file instanceof File && validFileType(file)) {
-    preview.value = URL.createObjectURL(file);
-    return true;
+  const fileInstance = file instanceof File ? file : file.raw!;
+  if (fileInstance.size > uploadState.size) {
+    MessagePlugin.warning(`上传的图片不能大于 ${uploadState.size / 1024 / 1024}MB`);
+    return false;
   }
-  if (Reflect.has(file, 'raw')) {
-    preview.value = URL.createObjectURL((file as UploadFile).raw);
-    return true;
+  if (!validFileType(fileInstance)) {
+    MessagePlugin.warning(`请上传文件类型为${fileTypes.join(',').replaceAll('image/', '')}的图片`);
+    return false;
   }
-  MessagePlugin.warning(`请上传文件类型为${fileTypes.join(',').replaceAll('image/', '')}的图片`);
-  return false;
+  preview.value = URL.createObjectURL(fileInstance);
+  return true;
 };
 // 上传钩子
 const handleRequestMethod = async (files: UploadFile): Promise<RequestMethodResponse> => {
@@ -125,8 +130,9 @@ const handleRequestMethod = async (files: UploadFile): Promise<RequestMethodResp
   const deleteValue = ['', null, undefined];
   for (const key in postData) {
     if (!deleteValue.includes(postData[key])) formData.append(key, postData[key]);
+    console.log(`${key}`, postData[key]);
   }
-  formData.set('file', files.raw);
+  formData.append('file', files.raw);
   const [err, data] = await to(API.upload(formData));
   if (err) return Promise.resolve({ status: 'fail', error: err.toString(), response: {} });
   if (data?.errCode === 0) {
@@ -145,17 +151,22 @@ const onRemove = (context: UploadRemoveContext) => {
 // submit
 const submitLoading = ref<boolean>(false);
 const clearFile = async () => {
-  try {
-    if (localData.value.idCardPhotoMediaUrl) {
+  if (localData.value.idCardPhotoMediaUrl) {
+    try {
       submitLoading.value = true;
       const { idCardPhotoMediaTm, idCardPhotoMediaId, idCardPhotoMediaUrl, ...rest } = localData.value;
       await API.updateParty([rest]);
       handleSubmitSuccess();
+    } finally {
+      submitLoading.value = false;
     }
-  } finally {
-    submitLoading.value = false;
   }
   preview.value = '';
+  uploadState.files = [];
+};
+const uploadRef = ref();
+const confirm = () => {
+  uploadRef.value.triggerUpload();
 };
 const close = () => {
   emit('update:visible', false);
@@ -169,8 +180,18 @@ const handleSubmitSuccess = () => {
 </script>
 
 <style lang="less" scoped>
-.dialog {
+.previewArea {
+  margin: 20px auto;
+  width: 850px;
+  height: 500px;
   display: flex;
-  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed #666;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
 }
 </style>
