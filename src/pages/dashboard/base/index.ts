@@ -538,8 +538,9 @@ export function getFolderLineDataSet({
  *  报表数据源
  */
 type OriginDataType = Array<IMedMonthlyReport | IMedQuarterlyReport | IMedSemiannualReport | IMedAnnualReport>;
+export type ReportType = 'month' | 'quarter' | 'semiannual' | 'annual';
 interface IGetReportDataSet extends Record<string, unknown> {
-  type: 'month' | 'quarter' | 'semiannual' | 'annual';
+  type: ReportType;
   data: OriginDataType;
 }
 export function getReportDataSet({ type, data, placeholderColor, borderColor }: IGetReportDataSet) {
@@ -605,7 +606,7 @@ export function getReportDataSet({ type, data, placeholderColor, borderColor }: 
       break;
   }
   const commonOptions = {
-    smooth: false,
+    smooth: true,
     showSymbol: true,
     symbol: 'circle',
     symbolSize: 8,
@@ -635,29 +636,43 @@ export function getReportDataSet({ type, data, placeholderColor, borderColor }: 
       length: 15,
       alignWithLabel: true,
     },
+    splitLine: {
+      show: true,
+      lineStyle: {
+        type: 'dashed',
+      },
+    },
   };
   const dataSet = {
+    color: chartListColor(),
     tooltip: {
       trigger: 'axis',
     },
     legend: {
       data: ['案件数量', '涉案人数', '涉案金额'],
+      textStyle: {
+        fontSize: 12,
+        color: placeholderColor,
+      },
     },
     grid: {
-      left: '3%',
-      right: '3%',
-      bottom: '3%',
+      left: '0%',
+      right: '-5%',
+      bottom: '1%',
       containLabel: true,
-    },
-    toolbox: {
-      feature: {
-        saveAsImage: {},
-      },
     },
     xAxis: {
       type: 'category',
       boundaryGap: false,
       data: xAxisLabel[type],
+      axisLabel: {
+        color: placeholderColor,
+      },
+      axisLine: {
+        lineStyle: {
+          width: 1,
+        },
+      },
     },
     yAxis: [
       {
@@ -668,7 +683,7 @@ export function getReportDataSet({ type, data, placeholderColor, borderColor }: 
           formatter: '{value} 起',
         },
         position: 'left',
-        max: Math.max(...caseCount) + Math.max(...caseCount) / 10,
+        max: Math.ceil(Math.max(...caseCount) + Math.abs(Math.max(...caseCount) - Math.max(...partyCount))),
         min: 0,
       },
       {
@@ -679,7 +694,7 @@ export function getReportDataSet({ type, data, placeholderColor, borderColor }: 
           formatter: '{value} 人',
         },
         position: 'right',
-        max: Math.max(...partyCount) + Math.max(...partyCount) / 10,
+        max: Math.ceil(Math.max(...partyCount) + Math.abs(Math.max(...caseCount) - Math.max(...partyCount))),
         min: 0,
       },
       {
@@ -690,7 +705,6 @@ export function getReportDataSet({ type, data, placeholderColor, borderColor }: 
           formatter: '{value} 万元',
         },
         offset: 60,
-        max: Math.max(...moneyInvolvedCount) + Math.max(...moneyInvolvedCount) / 10,
         min: 0,
       },
     ],

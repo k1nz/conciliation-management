@@ -93,19 +93,19 @@ export const getPdfStream = (data: BIZ.IReqPdfStream) => {
  */
 export const getMonthlyReport = (data: BIZ.IGetMonthlyReport) => {
   return requestInstance.get<BIZ.IMedMonthlyReport>({
-    url: `${SYS_PREFIX.report}`,
+    url: `${SYS_PREFIX.report}/monthly`,
     data,
   });
 };
 export const getQuarterlyReport = (data: BIZ.IGetMonthlyReport) => {
   return requestInstance.get<BIZ.IMedQuarterlyReport>({
-    url: `${SYS_PREFIX.report}`,
+    url: `${SYS_PREFIX.report}/quarterly`,
     data,
   });
 };
 export const getSemiannualReport = (data: BIZ.IGetMonthlyReport) => {
   return requestInstance.get<BIZ.IMedSemiannualReport>({
-    url: `${SYS_PREFIX.report}`,
+    url: `${SYS_PREFIX.report}/semiannually`,
     data,
   });
 };
@@ -113,7 +113,7 @@ function getAnnualReport(data: BIZ.IGetPreciseAnnualReport): Promise<IDataType<B
 function getAnnualReport(data: BIZ.IGetRangeAnnualReport): Promise<IDataType<BIZ.IMedAnnualReport>>;
 function getAnnualReport(data: BIZ.IGetPreciseAnnualReport | BIZ.IGetRangeAnnualReport) {
   return requestInstance.get<BIZ.IMedAnnualReport>({
-    url: `${SYS_PREFIX.report}`,
+    url: `${SYS_PREFIX.report}/annually`,
     data,
   });
 }
