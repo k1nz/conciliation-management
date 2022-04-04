@@ -44,19 +44,25 @@
         </template>
 
         <template #op="{ row, rowIndex }">
-          <t-tooltip content="详情" style="margin: 0 30px 0px 0">
-            <t-icon name="bulletpoint" size="xs" style="cursor: pointer" @click="handleClickDetail(row)" />
-          </t-tooltip>
-          <t-tooltip theme="danger" content="删除" style="margin: 0 30px 0px 0">
-            <t-icon name="delete" size="xs" style="cursor: pointer" @click="handleClickDelete(rowIndex)" />
-          </t-tooltip>
-          <t-tooltip theme="primary" content="更多" style="margin: 0 0px 0px 0">
-            <t-dropdown :options="dropDownOptions" @click="handleDropdown">
-              <t-button variant="text">
-                <t-icon name="more" size="xs" style="cursor: pointer" />
+          <div class="operators-container">
+            <t-tooltip content="详情">
+              <t-button shape="square" variant="text" @click="handleClickDetail(row)">
+                <t-icon name="bulletpoint" size="xs" />
               </t-button>
-            </t-dropdown>
-          </t-tooltip>
+            </t-tooltip>
+            <t-tooltip theme="danger" content="删除">
+              <t-button shape="square" variant="text" @click="handleClickDelete(rowIndex)">
+                <t-icon name="delete" size="xs" />
+              </t-button>
+            </t-tooltip>
+            <t-tooltip theme="primary" content="更多">
+              <t-dropdown :options="dropDownOptions" @click="handleDropdown">
+                <t-button variant="text">
+                  <t-icon name="more" size="xs" />
+                </t-button>
+              </t-dropdown>
+            </t-tooltip>
+          </div>
         </template>
       </t-table>
     </card>
@@ -285,5 +291,10 @@ export default defineComponent({
 
 .search-input {
   width: 360px;
+}
+.operators-container {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 }
 </style>

@@ -61,7 +61,7 @@
 </template>
 <script setup lang="tsx">
 import { useRequest } from 'vue-request';
-import { ref, computed, reactive } from 'vue';
+import Vue, { ref, computed, reactive } from 'vue';
 import { $computed } from 'vue/macros';
 import { DropdownOption, MessagePlugin } from 'tdesign-vue-next';
 import type { TableChangeData } from 'tdesign-vue-next';
@@ -291,7 +291,7 @@ const OperatorBtn = ({
   </t-button>
 );
 
-const OperatorVNode = ({ 'row-options': rowOptions }: { 'row-options': ITableRowOptions }) => (
+const OperatorVNode: Vue.FunctionalComponent<{ 'row-options': ITableRowOptions }> = ({ 'row-options': rowOptions }) => (
   <div class="operators-container">
     {operatorSpaceOptions.map((operator, idx) => (
       <t-tooltip theme={operator.tooltipTheme || 'primary'} content={operator.tooltip(rowOptions)} key={idx}>

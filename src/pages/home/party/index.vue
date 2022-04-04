@@ -51,21 +51,24 @@
       </template>
       <template #id-card-photo="{ row }">
         <t-tooltip content="查看或上传">
-          <t-icon name="image" size="xs" style="cursor: pointer" @click="showUploadPopup(row)" />
+          <t-button shape="square" variant="text" @click="showUploadPopup(row)">
+            <t-icon name="image" size="xs" />
+          </t-button>
         </t-tooltip>
       </template>
       <template #op="{ row, rowIndex }">
-        <t-tooltip content="详情" style="margin: 0 25px 0 0">
-          <t-icon name="bulletpoint" size="xs" style="cursor: pointer" @click="handleClickDetail(row)" />
-        </t-tooltip>
-        <t-tooltip theme="danger" content="删除" style="margin: 0 0 0 0">
-          <t-icon
-            name="delete"
-            size="xs"
-            :style="{ cursor: row.archiveDate ? 'not-allowed' : 'pointer' }"
-            @click="showDialog('delete', rowIndex)"
-          />
-        </t-tooltip>
+        <div class="operators-container">
+          <t-tooltip content="详情">
+            <t-button shape="square" variant="text" @click="handleClickDetail(row)">
+              <t-icon name="bulletpoint" size="xs" />
+            </t-button>
+          </t-tooltip>
+          <t-tooltip theme="danger" content="删除">
+            <t-button shape="square" variant="text" @click="showDialog('delete', rowIndex)">
+              <t-icon name="delete" size="xs" />
+            </t-button>
+          </t-tooltip>
+        </div>
       </template>
       <template #expandedRow="{ row }">
         <div class="more-detail">
@@ -242,4 +245,10 @@ const handleDialogConfirm = async () => {
   }
 };
 </script>
-<style lang="less"></style>
+<style lang="less">
+.operators-container {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+</style>
