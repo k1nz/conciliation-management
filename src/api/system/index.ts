@@ -18,7 +18,7 @@ export const getDict = (data?: SYS.IReqGetDict) => {
 };
 // 日志
 export const getLog = (data?: SYS.IReqGetLog) => {
-  return requestInstance.get<SYS.IResGetLog>({
+  return requestInstance.get<SYS.ILogEntry>({
     url: `${SYS_PREFIX.log}`,
     data,
   });

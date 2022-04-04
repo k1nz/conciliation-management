@@ -28,27 +28,6 @@ export default [
       },
     ],
   },
-  // {
-  //   path: '/mediation',
-  //   component: () => import('@/layouts'),
-  //   redirect: '/mediation/office',
-  //   name: 'mediation',
-  //   meta: { title: '调解室管理', icon: 'desktop', permsCode: 'mediationRoomMG' },
-  //   children: [
-  //     {
-  //       path: 'office',
-  //       name: 'mediationOffice',
-  //       component: () => import('@/pages/mediation/office/index.vue'),
-  //       meta: { title: '调解室管理', permsCode: 'med_office:read' },
-  //     },
-  //     {
-  //       path: 'mediator',
-  //       name: 'mediator',
-  //       component: () => import('@/pages/mediation/mediator/index.vue'),
-  //       meta: { title: '调解员管理', permsCode: 'mediator:read' },
-  //     },
-  //   ],
-  // },
   {
     path: '/list',
     component: () => import('@/layouts'),
@@ -73,8 +52,7 @@ export default [
       {
         path: 'group_management',
         name: 'groupManagement',
-        // component: () => import('@/pages/list/mediator/index.vue'),
-        component: () => import('@/pages/dashboard/base/index.vue'),
+        component: () => import('@/pages/management/group/index.vue'),
         meta: { title: '分组管理', permsCode: 'grp:read' },
       },
     ],
@@ -113,13 +91,6 @@ export default [
         name: 'userManagement',
         component: () => import('@/pages/system/user/index.vue'),
         meta: { title: '用户管理', permsCode: 'user:read' },
-      },
-      {
-        path: 'group',
-        name: 'groupManagement',
-        // component: () => import('@/pages/system/group/index.vue'),
-        component: () => import('@/pages/dashboard/base/index.vue'),
-        meta: { title: '分组管理', permsCode: 'grp:read' },
       },
       {
         path: 'log',

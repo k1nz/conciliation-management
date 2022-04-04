@@ -1,6 +1,7 @@
 import { DICT_TYPES } from '@/constants';
 import * as USER from '@/types/user';
 import { WithCondition } from './request';
+import { GetPartsRequired } from '@/types/utils';
 
 export interface IDictEntry {
   id: string;
@@ -29,6 +30,47 @@ export type ITreeGroupObject = IFlatGroup & {
 
 export type ITreeGroup = ITreeGroupObject[];
 
+export type UserOperateKind =
+  | 'login'
+  | 'logout'
+  | 'update'
+  | 'delete'
+  | 'insert'
+  | 'enable'
+  | 'disable'
+  | 'chg_pwd'
+  | 'chg_other_pwd'
+  | 'update_roles'
+  | 'update_data_grps';
+export type SysOperateKind = 'update';
+export type DictOperateKind = 'insert' | 'update' | 'delete.id' | 'delete.category' | 'delete.code';
+export type GroupOperateKind = 'insert' | 'update' | 'delete';
+export type RoleOperateKind = 'insert' | 'update' | 'delete' | 'update_privs';
+export type MediaOperateKind = 'insert' | 'update' | 'download';
+
+export type OperateKind =
+  | UserOperateKind
+  | SysOperateKind
+  | DictOperateKind
+  | GroupOperateKind
+  | RoleOperateKind
+  | MediaOperateKind;
+
+export interface ILogEntry {
+  logId: string;
+  time: number;
+  userId: string;
+  userName: string;
+  grpId: string;
+  clientIp: string;
+  op: OperateKind;
+  success: boolean;
+  targetType: string;
+  targetId: string;
+  description: string;
+  data: ILogEntry[];
+}
+
 // API
 // /dict
 export type IReqGetDict = WithCondition<{
@@ -43,24 +85,7 @@ export type IReqGetDict = WithCondition<{
 }>;
 
 // /log
-export interface IReqGetLog {
-  logId?: string;
-  time: string;
-  userId?: string;
-  userName?: string;
-  grpId?: string;
-  clientIp?: string;
-  op?: string;
-  success?: boolean;
-  targetType?: string;
-  targetId?: string;
-}
-export interface IResGetLog extends IReqGetLog {
-  logId: string;
-  time: string;
-  op: string;
-  success: boolean;
-}
+export type IReqGetLog = GetPartsRequired<ILogEntry, 'time'>;
 
 // /role
 export interface IReqGetRoles {
